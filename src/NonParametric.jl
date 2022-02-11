@@ -60,13 +60,13 @@ function bcount(U,breaks,n,m)
     return bfirst, blast
 end
 
-function SurvIC(L, R, S, iter=100, tol=1e-8))
+function SurvIC(L, R, S, iter=100, tol=1e-8)
     tj = setbreaks([S-L;S-R])
     n = length(L)
     m = length(tj)
     aind = acount(S-R, S-L,tj,n,m)
     p = inv(m)*ones(m)
-    dj = d_up(p,aind[1],aind[2],n,m)
+    dj = d_up(p, aind[1], aind[2], n, m)
     copy!(p, dj ./ sum(dj))
     con = false
     count = 0
@@ -93,7 +93,7 @@ function SurvICRT(L, R, S, Tmax, iter=100, tol=1e-10)
     p = inv(m)*ones(m)
     bind = bcount(Tmax.-S,tj,n,m)
     dj = d_up(p,aind[1],aind[2],n,m)
-    p_up!(p, n, m, bind[1], bind[2],dj)
+    p_up!(p, n, m, bind[1], bind[2], dj)
     con = false
     count = 0
     p2 = p #こういうとこcopy!()とか使ったほうがいいですか？
