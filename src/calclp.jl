@@ -1,3 +1,4 @@
+
 function calclp_dic(d, EL, ER, SL, SR)
     n = length(EL)
     ll = 0.0
@@ -16,7 +17,7 @@ function calclp_ic(d, EL, ER, S)
     n = length(S)
     ll = 0.0
     for i in 1:n
-        ll += log(cdf(d,S[i]-ER[i])-cdf(d,S[i]-ER[i])))
+        ll += log(cdf2(d,S[i]-ER[i])-cdf2(d,S[i]-ER[i])))
         end
     end
     return -ll

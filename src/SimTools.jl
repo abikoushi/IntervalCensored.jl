@@ -1,3 +1,4 @@
+
 function make_ic(rng::AbstractRNG, y::Vector, at::Vector, tau::Vector)
     n = length(y)
     E_R = zeros(n)
@@ -12,7 +13,6 @@ function make_ic(rng::AbstractRNG, y::Vector, at::Vector, tau::Vector)
     return E_L, E_R, S
 end
 
-
 function make_ic(rng::AbstractRNG, y::Number, at::Number, tau::Number)
     ue = rand(rng)
     E_R = at + tau * ue
@@ -21,7 +21,7 @@ function make_ic(rng::AbstractRNG, y::Number, at::Number, tau::Number)
     return E_L, E_R, S
 end
 
-function make_icrt(rng::AbstractRNG, dist, Tmax,  N)
+function make_icrt(rng::AbstractRNG, dist::UnivariateDistribution, Tmax,  N)
     L = zeros(N)
     R = zeros(N)
     S = zeros(N)
@@ -48,7 +48,7 @@ function make_dic(rng::AbstractRNG, y, at, tau_e, tau_s)
     return E_L, E_R, S_L, S_R
 end
 
-function make_dicrt(rng, dist, Tmax,  N)
+function make_dicrt(rng::AbstractRNG, dist::UnivariateDistribution, Tmax,  N)
     EL = zeros(N)
     ER = zeros(N)
     SL = zeros(N)

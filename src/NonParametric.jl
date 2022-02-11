@@ -1,12 +1,3 @@
-function d_up(p,j1,j2,n,m)
-    dj = zeros(m)
-    for i in 1:n
-        q = p[j1[i]:j2[i]]
-        q ./= sum(q)
-        dj[j1[i]:j2[i]] += q
-    end
-    return dj
-end
 
 function d_up(p,j1,j2,n,m)
     dj = zeros(m)
@@ -20,8 +11,8 @@ function d_up(p,j1,j2,n,m)
     return dj
 end
 
-function setbreaks(trow, O=0.0)
-    tj = sort(unique(max.(O, trow)))
+function setbreaks(trow, o=0)
+    tj = sort(unique(max.(o, trow)))
     return tj
 end
 
@@ -31,7 +22,7 @@ function p_up!(p,n,m,j1,j2,dj)
         if j1[i]>0 && j2[i]>0
         q = sum(p[j1[i]:j2[i]])
         if q > 0.0
-        b = (1.0-q)/q
+        b = (1-q)/q
         ind = setdiff(1:m,j1[i]:j2[i])
         r = vec(p[ind])
         r ./= sum(r)
@@ -48,12 +39,13 @@ function acount(L,R,breaks,n,m)
     alast = zeros(Int,n)
     for i in 1:n
         alpha = L[i] .<= breaks[1:(m-1)] .&& breaks[2:m] .<= R[i]
-        afirst[i] = findfirst(alpha)
-        alast[i] =  findlast(alpha)
+        if any(alpha)
+            afirst[i] = findfirst(alpha)
+            alast[i] =  findlast(alpha)
+        end
     end
     return afirst, alast
 end
-
 
 function bcount(U,breaks,n,m)
     bfirst = zeros(Int,n)
@@ -68,12 +60,37 @@ function bcount(U,breaks,n,m)
     return bfirst, blast
 end
 
+function SurvIC(L, R, S, iter=100, tol=1e-8))
+    tj = setbreaks([S-L;S-R])
+    n = length(L)
+    m = length(tj)
+    aind = acount(S-R, S-L,tj,n,m)
+    p = inv(m)*ones(m)
+    dj = d_up(p,aind[1],aind[2],n,m)
+    copy!(p, dj ./ sum(dj))
+    con = false
+    count = 0
+    p2 = p #こういうとこcopy!()とか使ったほうがいいですか？
+    for it in 1:iter
+        count += 1
+        dj = d_up(p,aind[1],aind[2],n,m)
+        copy!(p2, dj ./ sum(dj))
+        con = all(abs.(p2-p) .< tol)
+        p = p2
+    if con || any(isnan.(p))
+        break
+    end
+    end
+    return tj, 1.0 .- cumsum(p), con, count
+end
+
+
 function SurvICRT(L, R, S, Tmax, iter=100, tol=1e-10)
     tj = setbreaks([S-L;S-R])
     n = length(L)
     m = length(tj)
     aind = acount(S-R, S-L,tj,n,m)
-    p = (1.0/m)*ones(m)
+    p = inv(m)*ones(m)
     bind = bcount(Tmax.-S,tj,n,m)
     dj = d_up(p,aind[1],aind[2],n,m)
     p_up!(p, n, m, bind[1], bind[2],dj)
@@ -93,13 +110,38 @@ function SurvICRT(L, R, S, Tmax, iter=100, tol=1e-10)
     return tj, 1.0 .- cumsum(p), con, count
 end
 
+function SurvDIC(EL, ER, SL, SR, iter=100, tol=1e-8)
+    S = 0.5*(SL+SR)
+    tj = setbreaks([S-EL;S-ER])
+    n = length(EL)
+    m = length(tj)
+    aind = acount(S-ER, S-EL,tj,n,m)
+    p = inv(m)*ones(m)
+    dj = d_up(p,aind[1],aind[2],n,m)
+    copy!(p, dj ./ sum(dj))
+    con = false
+    count = 0
+    p2 = p #こういうとこcopy!()とか使ったほうがいいですか？
+    for it in 1:iter
+        count += 1
+        dj = d_up(p,aind[1],aind[2],n,m)
+        copy!(p2, dj ./ sum(dj))
+        con = all(abs.(p2-p) .< tol)
+        p = p2
+    if con || any(isnan.(p))
+        break
+    end
+    end
+    return tj, 1.0 .- cumsum(p), con, count
+end
+
 function SurvDICRT(EL, ER, SL, SR, Tmax, iter=100, tol=1e-8)
     S = 0.5*(SL+SR)
     tj = setbreaks([S-EL;S-ER])
     n = length(EL)
     m = length(tj)
     aind = acount(S-ER, S-EL,tj,n,m)
-    p = (1.0/m)*ones(m)
+    p = inv(m)*ones(m)
     bind = bcount(Tmax.-SR,tj,n,m)
     dj = d_up(p,aind[1],aind[2],n,m)
     p_up!(p, n, m, bind[1], bind[2],dj)

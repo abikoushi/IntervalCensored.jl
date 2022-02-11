@@ -53,12 +53,15 @@ function gamma_ccdf(a::ForwardDiff.Dual{T}, x::ForwardDiff.Dual{T}) where {T}
     return ForwardDiff.Dual{T}(y,ga,gx)
 end
 
-function cdf(d::Gamma, x)
+ccdf2 = Distributions.ccdf
+cdf2 = Distributions.cdf
+
+function cdf2(d::Gamma, x)
     shp, scl = params(d)
     return gamma_cdf(shp, x/scl)
 end
 
-function ccdf(d::Gamma, x)
+function ccdf2(d::Gamma, x)
     shp, scl = params(d)
     return gamma_ccdf(shp, x/scl)
 end
