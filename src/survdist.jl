@@ -7,25 +7,25 @@ function gamma_ccdf(a::Number, x::Number)
 end
 
 #where {T} の意味わかっていない
-function gamma_cdf(a::ForwardDiff.Dual{T}, x::Real) where {T}
+function gamma_cdf(a::ForwardDiff.Dual{T}, x::Number) where {T}
     y = gamma_inc(ForwardDiff.value(a),x,0)[1]
     y_a = (log(x) - digamma(a))*y-exp(a*log(x)-log(a)-loggamma(a+1))*pFq(SA[a,a], SA[a+1,a+1], -x)
     return ForwardDiff.Dual{T}(y,y_a)
 end
 
-function gamma_cdf(a::Real, x::ForwardDiff.Dual{T}) where {T}
+function gamma_cdf(a::Number, x::ForwardDiff.Dual{T}) where {T}
     y = gamma_inc(a,ForwardDiff.value(x),0)[1]
     y_x = exp(-x + (a-1)*log(x) - loggamma(a))
     return ForwardDiff.Dual{T}(y,y_x)
 end
 
-function gamma_ccdf(a::ForwardDiff.Dual{T}, x::Real) where {T}
+function gamma_ccdf(a::ForwardDiff.Dual{T}, x::Number) where {T}
     y = gamma_inc(ForwardDiff.value(a),x,0)[2]
     y_a = -((log(x) - digamma(a))*(1-y)-exp(a*log(x)-log(a)-loggamma(a+1))*pFq(SA[a,a], SA[a+1,a+1], -x))
     return ForwardDiff.Dual{T}(y,y_a)
 end
 
-function gamma_ccdf(a::Real, x::ForwardDiff.Dual{T}) where {T}
+function gamma_ccdf(a::Number, x::ForwardDiff.Dual{T}) where {T}
     y = gamma_inc(a,ForwardDiff.value(x),0)[2]
     y_x = -exp(-x + (a-1)*log(x) - loggamma(a))
     return ForwardDiff.Dual{T}(y,y_x)
@@ -53,8 +53,29 @@ function gamma_ccdf(a::ForwardDiff.Dual{T}, x::ForwardDiff.Dual{T}) where {T}
     return ForwardDiff.Dual{T}(y,ga,gx)
 end
 
-ccdf2 = Distributions.ccdf
-cdf2 = Distributions.cdf
+function cdf2(d::Exponential, x)
+    return Distributions.cdf(d,x)
+end
+
+function ccdf2(d::Exponential, x)
+    return Distributions.ccdf(d,x)
+end
+
+function ccdf2(d::LogNormal, x)
+    return Distributions.ccdf(d,x)
+end
+
+function cdf2(d::LogNormal, x)
+    Distributions.cdf(d,x)
+end
+
+function ccdf2(d::Weibull, x)
+    return Distributions.ccdf(d,x)
+end
+
+function cdf2(d::Weibull, x)
+    Distributions.cdf(d,x)
+end
 
 function cdf2(d::Gamma, x)
     shp, scl = params(d)
