@@ -31,7 +31,7 @@ function calclp_ic(d, EL, ER, S)
     n = length(S)
     ll = 0
     for i in 1:n
-        ll += log(cdf2(d,S[i]-EL[i])-cdf2(d,S[i]-ER[i]))
+        ll += log(ccdf2(d,S[i]-ER[i]) - ccdf2(d,S[i]-EL[i]))
         end
     return -ll
 end
@@ -40,7 +40,7 @@ function calclp_icrt(d, EL, ER, S, Tmax)
     n = length(S)
     ll = 0
     for i in 1:n
-        ll += log(cdf2(d,S[i]-EL[i])-cdf2(d,S[i]-ER[i])) - log(cdf2(d, Tmax-S[i]))
+        ll += log(ccdf2(d,S[i]-ER[i]) - ccdf2(d,S[i]-EL[i])) - log(cdf2(d, Tmax-S[i]))
         end
     return -ll
 end
