@@ -12,4 +12,8 @@ include("survdist.jl")
 include("NonParametric.jl")
 include("SimTools.jl")
 
+export calclp_dic, calclp_ic
+export make_ic, make_icrt, make_dic, make_dicrt
+export SurvICRT, SurvDICRT
+
 end
