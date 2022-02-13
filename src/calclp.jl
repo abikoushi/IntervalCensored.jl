@@ -27,14 +27,29 @@ function calclp_dicrt(d, EL, ER, SL, SR, Tmax)
     return -ll
 end
 
+
 function calclp_ic(d, EL, ER, S)
     n = length(S)
     ll = 0
+    mu = mean(d)
     for i in 1:n
-        ll += log(ccdf2(d,S[i]-ER[i]) - ccdf2(d,S[i]-EL[i]))
+        if isfinite(EL[i])
+            ll += log(ccdf2(d,S[i]-ER[i])-ccdf2(d,S[i]-EL[i]))
+        else
+            ll += log(ccdf2(d,S[i]-ER[i])) - log(mu + ER[i])
         end
+    end
     return -ll
 end
+
+# function calclp_ic(d, EL, ER, S)
+#     n = length(S)
+#     ll = 0
+#     for i in 1:n
+#         ll += log(ccdf2(d,S[i]-ER[i]) - ccdf2(d,S[i]-EL[i]))
+#         end
+#     return -ll
+# end
 
 function calclp_icrt(d, EL, ER, S, Tmax)
     n = length(S)
