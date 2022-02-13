@@ -7,6 +7,7 @@ using HypergeometricFunctions
 using ForwardDiff
 using StaticArrays
 using StatsFuns
+using LinearAlgebra
 
 include("survdist.jl")
 include("NonParametric.jl")
