@@ -59,8 +59,11 @@ function Estep_icrt(rng, dist, EL, ER, S, Tmax, np)
         q = cdf(dist, Tmax - E)
         if 0.0 < q < 1.0
             B = rand(rng, Geometric(q))
+            if B > 0
+                ysub = [rand(rng, truncated(dist,Tmax-E,Inf)) for i in 1:B, j in 1:np]
+                yb = [yb;ysub]
+            end
         end
-        yb = [yb; rand(rng, truncated(dist,Tmax-E,Inf)) for j in 1:np]
     end
     return [ys ; yb] 
 end
