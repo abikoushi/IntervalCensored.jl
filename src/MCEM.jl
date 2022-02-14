@@ -60,7 +60,7 @@ function Estep_icrt(rng, dist, EL, ER, S, Tmax, np)
         if 0.0 < q < 1.0
             B = rand(rng, Geometric(q))
         end
-        yb = [yb; rand(rng, truncated(dist,Tmax-E,Inf)) j in 1:np]
+        yb = [yb; rand(rng, truncated(dist,Tmax-E,Inf)) for j in 1:np]
     end
     return [ys ; yb] 
 end
