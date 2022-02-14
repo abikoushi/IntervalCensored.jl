@@ -67,8 +67,8 @@ function Estep_icrt(rng, dist, EL, ER, S, Tmax, np)
             counter = 0
         if B[i] > 0
             for k in 1:B[i], j in 1:np
-                yb[counter+k,j] = rand(rng, dist)
-                #yb[counter+k,j] = rand(rng, truncated(dist, Tmax - S[i], nothing))
+                at = rand(rng, Uniform(EL[i],ER[i]))
+                yb[counter+k,j] = rand(rng, truncated(dist, Tmax - at, nothing))
             end
             counter += B[i]
         end
