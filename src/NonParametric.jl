@@ -1,4 +1,3 @@
-
 function d_up(p,j1,j2,n,m)
     dj = zeros(m)
     for i in 1:n

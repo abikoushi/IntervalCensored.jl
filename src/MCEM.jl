@@ -31,11 +31,58 @@ function Mstep(d::Weibull, ytilde)
     return Weibull(a,b)
 end
 
-function MCEMfic(rng, dist, iter, EL, ER, S, np=1)
+function Mstep(d::Exponential, ytilde)
+    b = mean(ytilde)
+    return Exponential(b)
+end
+
+function MCEMic(rng, dist, iter, EL, ER, S, np=1)
     lp = zeros(iter)
     pars = params(dist)
     for it in 1:iter
     ytilde = [rand(rng, truncated(dist,S[i]-ER[i],S[i]-EL[i])) for i in eachindex(S), j in 1:np]
+    dist = Mstep(dist, ytilde)
+    lp[it] = mean(x-> -logpdf(dist,x), ytilde)
+    end
+    return dist,lp
+end
+
+function Estep_icrt(rng, dist, EL, ER, S, Tmax, np)
+    N = length(S)
+    B = zeros(Int, N)
+    ys = zeros(N, np)
+    for i in 1:N
+        for j in 1:np
+        ys[i,j] = rand(rng, truncated(dist,S[i]-ER[i],S[i]-EL[i]))
+        end
+        q = cdf(dist, Tmax - S[i])
+        if 0.0 < q < 1.0
+            B[i] = rand(rng, Geometric(q))
+        end
+    end
+    Nb = sum(B)
+    if Nb > 0
+        yb = zeros(Nb, np)
+        for i in 1:N
+            counter = 0
+        if B[i] > 0
+            for k in 1:B[i], j in 1:np
+                yb[counter+k,j] = rand(rng, dist)
+                #yb[counter+k,j] = rand(rng, truncated(dist, Tmax - S[i], nothing))
+            end
+            counter += B[i]
+        end
+        end
+        ys = [ys ; yb]
+    end
+    return ys 
+end
+
+function MCEMicrt(rng, dist, iter, EL, ER, S, Tmax, np=1)
+    lp = zeros(iter)
+    pars = params(dist)
+    for it in 1:iter
+    ytilde = Estep_icrt(rng, dist, EL, ER, S, Tmax, np)
     dist = Mstep(dist, ytilde)
     lp[it] = mean(x-> -logpdf(dist,x), ytilde)
     end

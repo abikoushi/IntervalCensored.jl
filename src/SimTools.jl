@@ -20,20 +20,43 @@ function make_ic(rng::AbstractRNG, y::Number, at::Number, tau::Number)
     return EL, ER, S
 end
 
-function make_icrt(rng::AbstractRNG, dist::UnivariateDistribution, Tmax,  N)
+function make_ic_miss(rng::AbstractRNG, dt, N, p)
+    ER = zeros(N)
+    EL = zeros(N)
+    S = zeros(N)
+    y = zeros(N)
+    at = rand(rng,Exponential()) 
+    for i in 1:N
+        ue = rand(rng)
+        at += rand(rng,Exponential()) 
+        tau = rand(rng,Exponential())
+        y[i] = rand(rng,dt)
+        S[i] = at + y[i]
+        ud = rand(rng)
+        if ud <= p
+            EL[i] = max(0, at - tau * (1-ue))
+        else 
+            EL[i] = -Inf
+        end
+        ER[i] = min(S[i], at + tau * ue)
+    end
+    return EL, ER, S, y
+end
+
+function make_icrt(rng::AbstractRNG, dist, Tmax,  N)
     L = zeros(N)
     R = zeros(N)
     S = zeros(N)
+    d = trues(N)
     for i in 1:N
         y = rand(rng,dist)
         at = rand(rng, Uniform(0, Tmax))
         tau = rand(rng, Exponential(1.0))
         L[i], R[i], S[i] = make_ic(rng,y,at,tau)
+        d[i] = (S[i] <= Tmax)
     end
-    d = S .<= Tmax
     return L[d], R[d], S[d]
 end
-
 
 function make_dic(rng::AbstractRNG, y, at, tau_e, tau_s)
     S = y + at

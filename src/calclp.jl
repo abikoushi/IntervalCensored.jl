@@ -34,7 +34,7 @@ function calclp_ic(d, EL, ER, S)
     mu = mean(d)
     for i in 1:n
         if isfinite(EL[i])
-            ll += log(ccdf2(d,S[i]-ER[i])-ccdf2(d,S[i]-EL[i]))
+            ll += log(ccdf2(d,S[i]-ER[i])-ccdf2(d,S[i]-EL[i])) - log(ER[i] - EL[i])
         else
             ll += log(ccdf2(d,S[i]-ER[i])) - log(mu + ER[i])
         end
