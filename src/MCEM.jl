@@ -49,33 +49,20 @@ end
 
 function Estep_icrt(rng, dist, EL, ER, S, Tmax, np)
     N = length(S)
-    B = zeros(Int, N)
     ys = zeros(N, np)
+    yb = zeros(0, np)
     for i in 1:N
         for j in 1:np
-        ys[i,j] = rand(rng, truncated(dist,S[i]-ER[i],S[i]-EL[i]))
+            ys[i,j] = rand(rng, truncated(dist,S[i]-ER[i],S[i]-EL[i]))
         end
-        q = cdf(dist, Tmax - S[i])
+        E = rand(rng, Uniform(EL[i], ER[i]))
+        q = cdf(dist, Tmax - E)
         if 0.0 < q < 1.0
-            B[i] = rand(rng, Geometric(q))
+            B = rand(rng, Geometric(q))
         end
+        yb = [yb; rand(rng, truncated(dist,Tmax-E,Inf)) j in 1:np]
     end
-    Nb = sum(B)
-    if Nb > 0
-        yb = zeros(Nb, np)
-        for i in 1:N
-            counter = 0
-        if B[i] > 0
-            for k in 1:B[i], j in 1:np
-                at = rand(rng, Uniform(EL[i],ER[i]))
-                yb[counter+k,j] = rand(rng, truncated(dist, Tmax - at, nothing))
-            end
-            counter += B[i]
-        end
-        end
-        ys = [ys ; yb]
-    end
-    return ys 
+    return [ys ; yb] 
 end
 
 function MCEMicrt(rng, dist, iter, EL, ER, S, Tmax, np=1)
