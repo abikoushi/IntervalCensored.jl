@@ -36,6 +36,8 @@ function Mstep(d::Exponential, ytilde)
     return Exponential(b)
 end
 
+#######
+#interval censored
 function MCEMic(rng, dist, iter, EL, ER, S, np=1)
     lp = zeros(iter)
     pars = params(dist)
@@ -47,7 +49,9 @@ function MCEMic(rng, dist, iter, EL, ER, S, np=1)
     return dist,lp
 end
 
-function Estep_icrt(rng, dist, EL, ER, S, Tmax, np)
+########
+#interval censored with right truncated
+function Estep_icrt(rng, dist, EL, ER, S, Tmax, np=1)
     N = length(S)
     ys = zeros(N, np)
     yb = zeros(0, np)
@@ -73,6 +77,31 @@ function MCEMicrt(rng, dist, iter, EL, ER, S, Tmax, np=1)
     pars = params(dist)
     for it in 1:iter
     ytilde = Estep_icrt(rng, dist, EL, ER, S, Tmax, np)
+    dist = Mstep(dist, ytilde)
+    lp[it] = mean(x-> -logpdf(dist,x), ytilde)
+    end
+    return dist,lp
+end
+
+######
+#doubly interval censored
+function Estep_dic(rng, dist, EL, ER, SL, SR, np=1)
+    N = length(S)
+    ys = zeros(N, np)
+    for i in 1:N
+        for j in 1:np
+            E = rand(rng, Uniform(EL[i], ER[i]))
+            ys[i,j] = rand(rng, truncated(dist,SL[i]-E,SR[i]-E))
+        end
+    end
+    return ys
+end
+
+function MCEMdic(rng, dist, iter, EL, ER, S, np=1)
+    lp = zeros(iter)
+    pars = params(dist)
+    for it in 1:iter
+    ytilde = Estep_dic(rng, dist, EL, ER, SL, SR, np)
     dist = Mstep(dist, ytilde)
     lp[it] = mean(x-> -logpdf(dist,x), ytilde)
     end
