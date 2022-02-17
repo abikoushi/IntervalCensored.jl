@@ -10,13 +10,13 @@ function make_ic(rng::AbstractRNG, dt::ContinuousUnivariateDistribution, N::Int)
         ue = rand(rng)
         at -= log(rand(rng))
         tau = -log(rand(rng))
-        y = rand(rng,dt)
+        y = rand(rng, dt)
         S[i] = at + y
         ud = rand(rng)
         EL[i] = max(0.0, at - tau * (1.0-ue))
         ER[i] = min(S[i], at + tau * ue)
     end
-    return EL, ER, S, y
+    return EL, ER, S
 end
 
 #inteval censored (infinite)
@@ -39,7 +39,7 @@ function make_ic(rng::AbstractRNG, dt::ContinuousUnivariateDistribution, N::Int,
         end
         ER[i] = min(S[i], at + tau * ue)
     end
-    return EL, ER, S, y
+    return EL, ER, S
 end
 
 #inteval censored with right truncated
