@@ -116,12 +116,12 @@ end
 
 function  logmean(d::Weibull)
     shp, scl = params(d)
-    return log(scl) - loggamma(1+inv(shp))
+    return log(scl) + loggamma(1+inv(shp))
 end
 
 function  logmean(d::Gamma)
     shp, scl= params(d)
-    return log(shp) - inv(scl)
+    return log(shp) + log(scl)
 end
 
 function  logmean(d::Exponential)
