@@ -3,12 +3,22 @@ function calclp_dic(d, EL, ER, SL, SR)
     ll = 0
     logmu = logmean(d)
     for i in 1:n
-        if ER[i]<SL[i]
-            ll += logmu+logsubexp(log(eqcdf(d,SR[i]-ER[i])-eqcdf(d,SL[i]-ER[i])),log(eqcdf(d,SR[i]-EL[i])-eqcdf(d,SL[i]-EL[i]))) -
-            log(ER[i] - EL[i]) - log(SR[i] - SL[i])
-        else 
-            ll += logmu+logsubexp(log(eqcdf(d,SR[i]-ER[i])-(SL[i]-ER[i])),log(eqcdf(d,SR[i]-EL[i])-eqcdf(d,SL[i]-EL[i]))) -
-            log(ER[i] - EL[i]) - log(SR[i] - SL[i])
+        if isfinite(EL[i])
+            if ER[i]<SL[i]
+                ll += logmu+logsubexp(log(eqcdf(d,SR[i]-ER[i])-eqcdf(d,SL[i]-ER[i])),log(eqcdf(d,SR[i]-EL[i])-eqcdf(d,SL[i]-EL[i]))) -
+                log(ER[i] - EL[i]) - log(SR[i] - SL[i])
+            else 
+                ll += logmu+logsubexp(log(eqcdf(d,SR[i]-ER[i])-(SL[i]-ER[i])),log(eqcdf(d,SR[i]-EL[i])-eqcdf(d,SL[i]-EL[i]))) -
+                log(ER[i] - EL[i]) - log(SR[i] - SL[i])
+            end
+        # else
+            # if ER[i]<SL[i]
+            #     ll += logmu+logsubexp(log(eqcdf(d,SR[i]-ER[i])-eqcdf(d,SL[i]-ER[i])),log(eqcdf(d,SR[i]-EL[i])-eqcdf(d,SL[i]-EL[i]))) -
+            #     log(ER[i] - EL[i]) - log(SR[i] - SL[i])
+            # else 
+            #     ll += logmu+logsubexp(log(eqcdf(d,SR[i]-ER[i])-(SL[i]-ER[i])),log(eqcdf(d,SR[i]-EL[i])-eqcdf(d,SL[i]-EL[i]))) -
+            #     log(ER[i] - EL[i]) - log(SR[i] - SL[i])
+            # end
         end
     end
     return -ll
@@ -29,6 +39,8 @@ end
 #     return -ll
 # end
 
+#######
+#interval censored
 function calclp_ic(d, EL, ER, S)
     n = length(S)
     ll = 0
