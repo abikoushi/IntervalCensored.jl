@@ -60,9 +60,9 @@ function calclp_icrt(d, EL, ER, S, Tmax)
     ll = 0.0
     for i in 1:n
         if isfinite(EL[i])
-            ll += log(ccdf2(d,S[i]-ER[i]) - ccdf2(d,S[i]-EL[i])) - (logmean(d)+log(eqcdf(d,Tmax-ER[i])-eqcdf(d,Tmax-EL[i])))
+            ll += log(ccdf2(d,S[i]-ER[i]) - ccdf2(d,S[i]-EL[i])) - (logmean(d)+log(eqcdf(d,Tmax-LR[i])-eqcdf(d,Tmax-ER[i])))
         else
-            ll += log(ccdf2(d,S[i]-ER[i])) - (logmean(d)+log(eqcdf(d,Tmax-ER[i])))
+            ll += log(ccdf2(d,S[i]-ER[i])) - log(eqcdf(d,Tmax-ER[i]))
         end
     end
     return -ll

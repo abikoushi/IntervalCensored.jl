@@ -100,7 +100,11 @@ end
 
 function eqcdf(d::Gamma, x)
     shp, scl = params(d)
-    return gamma_cdf(shp+1, x/scl)[1]+(x/scl)*gamma_ccdf(shp, x/scl)/shp
+    out = zero(x)
+    if x > 0.0
+        out = gamma_cdf(shp+1, x/scl)+(x/scl)*gamma_ccdf(shp, x/scl)/shp
+    end
+    return out
 end
 
 function eqcdf(d::Exponential, x)
@@ -125,8 +129,8 @@ function  logmean(d::Gamma)
 end
 
 function  logmean(d::Exponential)
-    b = rate(d)
-    return -log(b)
+    b = scale(d)
+    return log(b)
 end
 
 function logeqpdf(d::UnivariateDistribution,x)

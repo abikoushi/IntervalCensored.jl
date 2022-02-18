@@ -18,6 +18,6 @@ include("MCEM.jl")
 export calclp_ic, calclp_icrt, calclp_dic, 
  make_ic, make_icrt, make_dic, make_dicrt,
  SurvIC, SurvICRT, SurvDIC, SurvDICRT,
- MCEMic, MCEMicrt, MCEMdic
+ MCEMic, MCEMicrt, MCEMdic, eqcdf
 
 end
