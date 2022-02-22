@@ -1,18 +1,16 @@
 """
 GeneralizedGamma(a,b,k)
 
-The *Generalized gamma distribution* with shape parameters `a` and `k`, and scale `b` has probability density
+The *Generalized gamma distribution* with shape parameters `a`, scale `b`, and power `k` has probability density
 function
 
 ```math
-f(x; \\alpha, \\theta) = \\frac{x^{\\alpha-1} e^{-x/\\theta}}{\\Gamma(\\alpha) \\theta^\\alpha},
+f(x; a, b) = \\frac{x^{a-1} e^{-x/b}}{\\Gamma(a/k)},
 \\quad x > 0
 ```
 
 ```julia
-Gamma()          # Gamma distribution with unit shape and unit scale, i.e. Gamma(1, 1)
-Gamma(a)         # Gamma distribution with shape α and unit scale, i.e. Gamma(α, 1)
-Gamma(a, b)      # Gamma distribution with shape α and scale θ
+GeneralizedGamma(a, b, k)      # GeneralizedGamma distribution with shape a, scale b, power k
 
 params(d)        # Get the parameters, i.e. (a, b, k)
 shape(d)         # Get the shape parameter, i.e. a
@@ -60,6 +58,8 @@ function ccdf(d::GeneralizedGamma, x)
     shp, scl, pwr = params(d)
     return gamma_ccdf(shp/pwr, (x/scl)^pwr)
 end
+
+ccdf2(d::GeneralizedGamma, x) = ccdf(d::GeneralizedGamma, x)
 
 function pdf(d::GeneralizedGamma, x)
     shp, scl, pwr = params(d)

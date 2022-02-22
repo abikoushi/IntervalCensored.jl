@@ -105,6 +105,8 @@ function ccdf(d::LogLogistic, x)
     return one(x) - (x^a) / (b^a +x^a)
 end
 
+ccdf2(d::LogLogistic, x) = ccdf(d::LogLogistic, x)
+
 # logcdf(d::Logistic, x::Real) = -log1pexp(-zval(d, x))
 # logccdf(d::Logistic, x::Real) = -log1pexp(zval(d, x))
 function quantile(d::LogLogistic,p)
