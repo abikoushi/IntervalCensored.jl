@@ -31,6 +31,18 @@ struct GeneralizedGamma{T<:Real} <: ContinuousUnivariateDistribution
     k::T
 end
 
+#### Parameters
+
+params(d::GeneralizedGamma) = (d.a, d.b, d.k)
+
+shape(d::GeneralizedGamma) = d.a
+scale(d::GeneralizedGamma) = d.b
+power(d::GeneralizedGamma) = 1 / d.k
+
+partype(d::GeneralizedGamma{T}) where {T} = T
+
+#### Evaluation
+
 function gamma_cdf(a, x)
     return gamma_inc(a,x,0)[1]
 end
@@ -47,6 +59,16 @@ end
 function ccdf(d::GeneralizedGamma, x)
     shp, scl, pwr = params(d)
     return gamma_ccdf(shp/pwr, (x/scl)^pwr)
+end
+
+function pdf(d::GeneralizedGamma, x)
+    shp, scl, pwr = params(d)
+    return (pwr/(scl^shp))*x^(shp-1)*exp(-(x/scl)^pwr)/gamma(shp/pwr)
+end
+
+function logpdf(d::GeneralizedGamma, x)
+    shp, scl, pwr = params(d)
+    return log(pwr)-shp*log(scl) + (shp-1)*log(x) -(x/scl)^pwr -loggamma(shp/pwr)
 end
 
 function eqcdf(d::GeneralizedGamma, x)
@@ -72,15 +94,6 @@ function rand(rng::AbstractRNG, d::GeneralizedGamma)
     return quantile(d, p)
 end
 
-#### Parameters
-
-params(d::GeneralizedGamma) = (d.a, d.b, d.k)
-
-shape(d::GeneralizedGamma) = d.a
-scale(d::GeneralizedGamma) = d.b
-power(d::GeneralizedGamma) = 1 / d.k
-
-partype(d::GeneralizedGamma{T}) where {T} = T
 
 #### Statistics
 
