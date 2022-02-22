@@ -11,14 +11,12 @@ function calclp_dic(d, EL, ER, SL, SR)
                 ll += logmu+logsubexp(log(eqcdf(d,SR[i]-ER[i])-(SL[i]-ER[i])),log(eqcdf(d,SR[i]-EL[i])-eqcdf(d,SL[i]-EL[i]))) -
                 log(ER[i] - EL[i]) - log(SR[i] - SL[i])
             end
-        # else
-            # if ER[i]<SL[i]
-            #     ll += logmu+logsubexp(log(eqcdf(d,SR[i]-ER[i])-eqcdf(d,SL[i]-ER[i])),log(eqcdf(d,SR[i]-EL[i])-eqcdf(d,SL[i]-EL[i]))) -
-            #     log(ER[i] - EL[i]) - log(SR[i] - SL[i])
-            # else 
-            #     ll += logmu+logsubexp(log(eqcdf(d,SR[i]-ER[i])-(SL[i]-ER[i])),log(eqcdf(d,SR[i]-EL[i])-eqcdf(d,SL[i]-EL[i]))) -
-            #     log(ER[i] - EL[i]) - log(SR[i] - SL[i])
-            # end
+        else
+            if ER[i]<SL[i]
+                ll += log(eqcdf(d,SR[i]-ER[i])-eqcdf(d,SL[i]-ER[i])) - log(SR[i] - SL[i])
+            else 
+                ll += log(eqcdf(d,SR[i]-ER[i])-(SL[i]-ER[i])) - log(SR[i] - SL[i])
+            end
         end
     end
     return -ll
@@ -60,7 +58,7 @@ function calclp_icrt(d, EL, ER, S, Tmax)
     ll = 0.0
     for i in 1:n
         if isfinite(EL[i])
-            ll += log(ccdf2(d,S[i]-ER[i]) - ccdf2(d,S[i]-EL[i])) - (logmean(d)+log(eqcdf(d,Tmax-LR[i])-eqcdf(d,Tmax-ER[i])))
+            ll += log(ccdf2(d,S[i]-ER[i]) - ccdf2(d,S[i]-EL[i])) - (logmean(d)+log(eqcdf(d,Tmax-ER[i])-eqcdf(d,Tmax-EL[i])))
         else
             ll += log(ccdf2(d,S[i]-ER[i])) - log(eqcdf(d,Tmax-ER[i]))
         end

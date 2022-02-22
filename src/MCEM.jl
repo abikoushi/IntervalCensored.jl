@@ -23,10 +23,10 @@ function Mstep(d::Weibull, ytilde)
     dot_powlog = dot(powa, logy)
 
     fx = dot_powlog/spow - mlog - inv(a)
-    ∂fx = (-dot_powlog^2 + spow * dot(logy.^2, powa)) / (spow^2) + inv(a^2)
+    dfx = (-dot_powlog^2 + spow * dot(logy.^2, powa)) / (spow^2) + inv(a^2)
 
-    Δa = fx / ∂fx
-    a -= Δa
+    Delta = fx / dfx
+    a -= Delta
     b = mean(x -> x^a, ytilde)^inv(a)
     return Weibull(a,b)
 end
@@ -91,7 +91,7 @@ function Estep_dic(rng, dist, EL, ER, SL, SR, np=1)
     for i in 1:N
         for j in 1:np
             E = rand(rng, Uniform(EL[i], ER[i]))
-            ys[i,j] = rand(rng, truncated(dist,SL[i]-E,SR[i]-E))
+            ys[i,j] = rand(rng, truncated(dist, SL[i]-E, SR[i]-E))
         end
     end
     return ys
@@ -103,7 +103,7 @@ function MCEMdic(rng, dist, iter, EL, ER, S, np=1)
     for it in 1:iter
     ytilde = Estep_dic(rng, dist, EL, ER, SL, SR, np)
     dist = Mstep(dist, ytilde)
-    lp[it] = mean(x-> -logpdf(dist,x), ytilde)
+    lp[it] = mean(x-> -logpdf(dist, x), ytilde)
     end
     return dist,lp
 end
