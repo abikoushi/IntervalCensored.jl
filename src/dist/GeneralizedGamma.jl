@@ -5,7 +5,7 @@ The *Generalized gamma distribution* with shape parameters `a`, scale `b`, and p
 function
 
 ```math
-f(x; a, b) = \\frac{x^{a-1} e^{-x/b}}{\\Gamma(a/k)},
+f(x; a, b) = \\frac{(k/b^a) x^{a-1} e^{-(x/b)^k}{\\Gamma(a/k)},
 \\quad x > 0
 ```
 

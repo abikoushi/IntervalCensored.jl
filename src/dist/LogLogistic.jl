@@ -1,11 +1,10 @@
 """
     LogLogistic(μ,θ)
 
-The *log-logistic distribution* with location `μ` and scale `θ` has probability density function
+The *log-logistic distribution* with shape `a` and scale `b` has probability density function
 
 ```math
-f(x; \\mu, \\theta) = \\frac{1}{4 \\theta} \\mathrm{sech}^2
-\\left( \\frac{x - \\mu}{2 \\theta} \\right)
+f(x; a, b)=\\frac{(a / b )(x/b)^{a-1}}{1+(x/b)^a)^2}}
 ```
 
 ```julia
