@@ -25,27 +25,6 @@ External links
 struct LogLogistic{T<:Real} <: ContinuousUnivariateDistribution
     a::T
     b::T
-    LogLogistic{T}(µ::T, θ::T) where {T} = new{T}(a, b)
-end
-
-
-function LogLogistic(μ::T, θ::T; check_args::Bool=true) where {T <: Real}
-    @check_args Logistic (θ, θ > zero(θ))
-    return Logistic{T}(μ, θ)
-end
-
-LogLogistic(μ::Real, θ::Real; check_args::Bool=true) = Logistic(promote(μ, θ)...; check_args=check_args)
-LogLogistic(μ::Integer, θ::Integer; check_args::Bool=true) = Logistic(float(μ), float(θ); check_args=check_args)
-LogLogistic(μ::Real=0.0) = Logistic(μ, one(μ); check_args=false)
-
-@distr_support LogLogistic 0 Inf
-
-#### Conversions
-function convert(::Type{LogLogistic{T}}, μ::S, θ::S) where {T <: Real, S <: Real}
-    Logistic(T(μ), T(θ))
-end
-function convert(::Type{LogLogistic{T}}, d::LogLogistic{S}) where {T <: Real, S <: Real}
-    LogLogistic(T(d.μ), T(d.θ), check_args=false)
 end
 
 #### Parameters
