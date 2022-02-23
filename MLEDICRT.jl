@@ -7,7 +7,7 @@ using DataFrames
 #using RCall
 #using Optim
 #using ForwardDiff
-using StatsFuns
+#using StatsFuns
 #using SpecialFunctions
 #using LinearAlgebra
 #using ProgressMeter
