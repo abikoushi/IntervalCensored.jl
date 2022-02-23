@@ -99,7 +99,7 @@ end
 
 function mean(d::GeneralizedGamma)
     shp, scl, pwr = params(d)
-    return scl*gamma((shp+1)/pwr))/gamma(shp/pwr)
+    return scl*gamma((shp+1)/pwr)/gamma(shp/pwr)
 end
 
 #mean(d::Gamma) = d.α * d.θ
