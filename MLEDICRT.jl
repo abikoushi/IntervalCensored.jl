@@ -25,7 +25,7 @@ function sim_dic(td, md, N, iter, seed)
     theta = zeros(iter,K)
     for i in 1:iter
         dat = make_dic(rng, td, N, 0.8)
-        fit = MCEMdic(rng, md, 100, dat[1], dat[2], dat[3])
+        fit = MCEMdic(rng, md, 100, dat[1], dat[2], dat[3], dat[4])
         ge[i] = quadgk(x -> -logpdf(fit[1],x)*pdf(td,x), 0, Inf)[1]
         aic1[i] = (calclp_ic(fit[1], dat[1], dat[2], dat[3]) + K)/N
         aic2[i] = fit[2][end]+K/N

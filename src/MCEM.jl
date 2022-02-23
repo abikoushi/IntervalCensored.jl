@@ -97,7 +97,7 @@ function Estep_dic(rng, dist, EL, ER, SL, SR, np=1)
     return ys
 end
 
-function MCEMdic(rng, dist, iter, EL, ER, S, np=1)
+function MCEMdic(rng, dist, iter, EL, ER, SL, SR, np=1)
     lp = zeros(iter)
     pars = params(dist)
     for it in 1:iter
