@@ -20,7 +20,8 @@ include("./dist/LogLogistic.jl")
 export calclp_ic, calclp_icrt, calclp_dic, 
  make_ic, make_icrt, make_dic, make_dicrt,
  SurvIC, SurvICRT, SurvDIC, SurvDICRT,
- MCEMic, MCEMicrt, MCEMdic, eqcdf, 
+ cdf, ccdf, pdf, logpdf, mean, eqcdf,
+ MCEMic, MCEMicrt, MCEMdic, 
  GeneralizedGamma, LogLogistic
 
 end
