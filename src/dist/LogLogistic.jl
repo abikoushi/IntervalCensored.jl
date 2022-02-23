@@ -1,5 +1,5 @@
 """
-    LogLogistic(μ,θ)
+    LogLogistic(a,b)
 
 The *log-logistic distribution* with shape `a` and scale `b` has probability density function
 

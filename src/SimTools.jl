@@ -89,7 +89,7 @@ end
 #####
 #doubly inteval censored
 #####
-function make_dic(rng::AbstractRNG, dt::ContinuousUnivariateDistribution, N::Int, Tmax)
+function make_dic(rng::AbstractRNG, dt::ContinuousUnivariateDistribution, N::Int)
     EL = zeros(N)
     ER = zeros(N)
     SL = zeros(N)

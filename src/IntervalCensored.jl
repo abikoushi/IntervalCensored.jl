@@ -8,6 +8,7 @@ using ForwardDiff
 using StaticArrays
 using StatsFuns
 import LinearAlgebra: dot
+import Base: rand
 
 include("survdist.jl")
 include("NonParametric.jl")
@@ -20,7 +21,7 @@ include("./dist/LogLogistic.jl")
 export calclp_ic, calclp_icrt, calclp_dic, 
  make_ic, make_icrt, make_dic, make_dicrt,
  SurvIC, SurvICRT, SurvDIC, SurvDICRT,
- cdf, ccdf, pdf, logpdf, mean, eqcdf,
+ eqcdf,
  MCEMic, MCEMicrt, MCEMdic, 
  GeneralizedGamma, LogLogistic
 

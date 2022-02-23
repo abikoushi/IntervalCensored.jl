@@ -105,5 +105,5 @@ function MCEMdic(rng, dist, iter, EL, ER, S, np=1)
     dist = Mstep(dist, ytilde)
     lp[it] = mean(x-> -logpdf(dist, x), ytilde)
     end
-    return dist,lp
+    return dist, lp
 end
