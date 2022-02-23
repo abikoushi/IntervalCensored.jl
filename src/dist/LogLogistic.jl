@@ -65,7 +65,7 @@ median(d::Logistic) = d.b
 
 function pdf(d::LogLogistic, x)
     a, b = params(d)
-    return ((a/b)*(x/b )^(a-1))/((1+(x/b)^a))^2)
+    return ((a/b)*(x/b )^(a-1))/((1+(x/b)^a))^2
 end
 
 function logpdf(d::LogLogistic, x)

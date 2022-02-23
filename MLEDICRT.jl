@@ -11,7 +11,7 @@ using StatsFuns
 #using SpecialFunctions
 #using LinearAlgebra
 #using ProgressMeter
-#]add "./projects/IntervalCensored"
+]add "./projects/IntervalCensored"
 #]add "https://github.com/abikoushi/IntervalCensored.jl"
 # 'IntervalCensored' is Available on https://github.com/abikoushi/IntervalCensored.jl
 using IntervalCensored
