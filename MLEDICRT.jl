@@ -11,7 +11,7 @@ using DataFrames
 #using SpecialFunctions
 #using LinearAlgebra
 #using ProgressMeter
-#]add "./projects/IntervalCensored"
+# ]add "./projects/IntervalCensored"
 #]add "https://github.com/abikoushi/IntervalCensored.jl"
 # 'IntervalCensored' is Available on https://github.com/abikoushi/IntervalCensored.jl
 using IntervalCensored
@@ -34,7 +34,7 @@ function sim_dic(td, md, N, iter, seed)
     return aic1, aic2, ge, theta
 end
 
-@time simout_dic = sim_dic(Weibull(1.5, 3), Weibull(1.0, 3.0), 100, 50, 2222)
+@time simout_dic = sim_dic(Weibull(1.5, 3), Weibull(1.0, 3.0), 100, 50, 1111)
 mean(simout_ic[4], dims=1)
 ms = [mean(simout_ic[1]-simout_ic[3]), mean(simout_ic[2]-simout_ic[3])]
 ss = [std(simout_ic[1]-simout_ic[3]), std(simout_ic[2]-simout_ic[3])]

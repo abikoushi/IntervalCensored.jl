@@ -86,7 +86,7 @@ end
 ######
 #doubly interval censored
 function Estep_dic(rng, dist, EL, ER, SL, SR, np=1)
-    N = length(S)
+    N = length(EL)
     ys = zeros(N, np)
     for i in 1:N
         for j in 1:np
