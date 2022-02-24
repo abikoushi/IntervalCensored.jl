@@ -22,9 +22,9 @@ External links
 * [Log-Logistic distribution on Wikipedia](https://en.wikipedia.org/wiki/Log-logistic_distribution)
 
 """
-struct LogLogistic{T<:Real} <: ContinuousUnivariateDistribution
-    a::T
-    b::T
+struct LogLogistic <: ContinuousUnivariateDistribution
+    a
+    b
 end
 
 #### Parameters

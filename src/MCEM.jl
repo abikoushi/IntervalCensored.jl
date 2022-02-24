@@ -68,11 +68,11 @@ function Estep_icrt(rng, dist, EL, ER, S, Tmax)
     return [ys ; yb] 
 end
 
-function MCEMicrt(rng, dist, iter, EL, ER, S, Tmax, np=1)
+function MCEMicrt(rng, dist, iter, EL, ER, S, Tmax)
     lp = zeros(iter)
     pars = params(dist)
     for it in 1:iter
-    ytilde = Estep_icrt(rng, dist, EL, ER, S, Tmax, np)
+    ytilde = Estep_icrt(rng, dist, EL, ER, S, Tmax)
     dist = Mstep(dist, ytilde)
     lp[it] = mean(x-> -logpdf(dist,x), ytilde)
     end
@@ -92,11 +92,11 @@ function Estep_dic(rng, dist, EL, ER, SL, SR)
     return ys
 end
 
-function MCEMdic(rng, dist, iter, EL, ER, SL, SR, np=1)
+function MCEMdic(rng, dist, iter, EL, ER, SL, SR)
     lp = zeros(iter)
     pars = params(dist)
     for it in 1:iter
-    ytilde = Estep_dic(rng, dist, EL, ER, SL, SR, np)
+    ytilde = Estep_dic(rng, dist, EL, ER, SL, SR)
     dist = Mstep(dist, ytilde)
     lp[it] = mean(x-> -logpdf(dist, x), ytilde)
     end

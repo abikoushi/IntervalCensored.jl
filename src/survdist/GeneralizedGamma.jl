@@ -23,10 +23,10 @@ External links
 
 """
 
-struct GeneralizedGamma{T<:Real} <: ContinuousUnivariateDistribution
-    a::T
-    b::T
-    k::T
+struct GeneralizedGamma <: ContinuousUnivariateDistribution
+    a
+    b
+    k
 end
 
 #### Parameters
@@ -37,7 +37,7 @@ shape(d::GeneralizedGamma) = d.a
 scale(d::GeneralizedGamma) = d.b
 power(d::GeneralizedGamma) = 1 / d.k
 
-partype(d::GeneralizedGamma{T}) where {T} = T
+# partype(d::GeneralizedGamma{T}) where {T} = T
 
 #### Evaluation
 
@@ -101,8 +101,6 @@ function mean(d::GeneralizedGamma)
     shp, scl, pwr = params(d)
     return scl*gamma((shp+1)/pwr)/gamma(shp/pwr)
 end
-
-#mean(d::Gamma) = d.α * d.θ
 
 #var(d::Gamma) = d.α * d.θ^2
 
