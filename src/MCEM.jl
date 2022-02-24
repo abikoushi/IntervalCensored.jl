@@ -1,12 +1,12 @@
-function Mstep(d::LogNormal, ytilde)
-    mu = mean(log, ytilde)
-    sigma = sqrt(mean(x -> abs2(log(x)-mu), ytilde))
+function Mstep(d::LogNormal, y)
+    mu = mean(log, y)
+    sigma = sqrt(mean(x -> (log(x)-mu)^2, y))
     return LogNormal(mu, sigma)
 end
 
-function Mstep(d::Gamma, ytilde)
-    mlog = log(mean(ytilde))
-    logm = mean(log, ytilde)
+function Mstep(d::Gamma, y)
+    mlog = log(mean(y))
+    logm = mean(log, y)
     a = shape(d)
     ia = inv(a)
     a = inv(ia + (-mlog + logm + log(a) - digamma(a)) / ((a^2) * (ia - trigamma(a))))
@@ -14,35 +14,32 @@ function Mstep(d::Gamma, ytilde)
     return Gamma(a,b)
 end
 
-function Mstep(d::Weibull, ytilde)
-    a = shape(d)
-    logy = mean(log, ytilde, dims=2)
-    powa = mean(x->x^a, ytilde, dims=2)
-    mlog = mean(logy)
-    spow = sum(powa)
-    dot_powlog = dot(powa, logy)
+function Mstep(d::Weibull, y)
+    a, b = params(d)
+    n = length(y)
+    powa = (y.^a)'
 
-    fx = dot_powlog/spow - mlog - inv(a)
-    dfx = (-dot_powlog^2 + spow * dot(logy.^2, powa)) / (spow^2) + inv(a^2)
+    fa = n*(inv(a) - inv(b)) + sum(logy) - n*log(b) - powa*(log(y)-log(b))/(b^a)
+    dfa = -n*inv(a^2) - (powa*(logy-log(b)).^2)/(b^a)
 
     Delta = fx / dfx
-    a -= Delta
+    a += Delta
     b = mean(x -> x^a, ytilde)^inv(a)
     return Weibull(a,b)
 end
 
-function Mstep(d::Exponential, ytilde)
-    b = mean(ytilde)
+function Mstep(d::Exponential, y)
+    b = mean(y)
     return Exponential(b)
 end
 
 #######
 #interval censored
-function MCEMic(rng, dist, iter, EL, ER, S, np=1)
+function MCEMic(rng, dist, iter, EL, ER, S)
     lp = zeros(iter)
     pars = params(dist)
     for it in 1:iter
-    ytilde = [rand(rng, truncated(dist,S[i]-ER[i],S[i]-EL[i])) for i in eachindex(S), j in 1:np]
+    ytilde = rand(rng, truncated(dist,S[i]-ER[i],S[i]-EL[i])) for i in eachindex(S)]
     dist = Mstep(dist, ytilde)
     lp[it] = mean(x-> -logpdf(dist,x), ytilde)
     end
@@ -51,20 +48,19 @@ end
 
 ########
 #interval censored with right truncated
-function Estep_icrt(rng, dist, EL, ER, S, Tmax, np=1)
+function Estep_icrt(rng, dist, EL, ER, S, Tmax)
     N = length(S)
-    ys = zeros(N, np)
-    yb = zeros(0, np)
+    ys = zeros(N)
+    yb = []
     for i in 1:N
-        for j in 1:np
-            ys[i,j] = rand(rng, truncated(dist,S[i]-ER[i],S[i]-EL[i]))
-        end
-        E = rand(rng, Uniform(EL[i], ER[i]))
+        ys[i] = rand(rng, truncated(dist,S[i]-ER[i],S[i]-EL[i]))
+        u = rand(rng)
+        E = EL[i] + (ER[i]-EL[i])*u
         q = cdf(dist, Tmax - E)
         if 0.0 < q < 1.0
             B = rand(rng, Geometric(q))
             if B > 0
-                ysub = [rand(rng, truncated(dist,Tmax-E,Inf)) for i in 1:B, j in 1:np]
+                ysub = [rand(rng, truncated(dist,Tmax-E,Inf)) for i in 1:B]
                 yb = [yb;ysub]
             end
         end
@@ -85,14 +81,13 @@ end
 
 ######
 #doubly interval censored
-function Estep_dic(rng, dist, EL, ER, SL, SR, np=1)
+function Estep_dic(rng, dist, EL, ER, SL, SR)
     N = length(EL)
-    ys = zeros(N, np)
+    ys = zeros(N)
     for i in 1:N
-        for j in 1:np
-            E = rand(rng, Uniform(EL[i], ER[i]))
-            ys[i,j] = rand(rng, truncated(dist, SL[i]-E, SR[i]-E))
-        end
+        u = rand(rng)
+        E = EL[i] + (ER[i]-EL[i])*u
+        ys[i] = rand(rng, truncated(dist, SL[i]-E, SR[i]-E))
     end
     return ys
 end
@@ -105,5 +100,4 @@ function MCEMdic(rng, dist, iter, EL, ER, SL, SR, np=1)
     dist = Mstep(dist, ytilde)
     lp[it] = mean(x-> -logpdf(dist, x), ytilde)
     end
-    return dist, lp
 end

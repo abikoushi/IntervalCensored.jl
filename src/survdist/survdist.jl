@@ -53,36 +53,36 @@ function gamma_ccdf(a::ForwardDiff.Dual{T}, x::ForwardDiff.Dual{T}) where {T}
     return ForwardDiff.Dual{T}(y,ga,gx)
 end
 
-function cdf2(d::Exponential, x)
-    return Distributions.cdf(d,x)
-end
+# function cdf2(d::Exponential, x)
+#     return Distributions.cdf(d,x)
+# end
 
-function ccdf2(d::Exponential, x)
-    return Distributions.ccdf(d,x)
-end
+# function ccdf2(d::Exponential, x)
+#     return Distributions.ccdf(d,x)
+# end
 
-function ccdf2(d::LogNormal, x)
-    return Distributions.ccdf(d,x)
-end
+# function ccdf2(d::LogNormal, x)
+#     return Distributions.ccdf(d,x)
+# end
 
-function cdf2(d::LogNormal, x)
-    Distributions.cdf(d,x)
-end
+# function cdf2(d::LogNormal, x)
+#     Distributions.cdf(d,x)
+# end
 
-function ccdf2(d::Weibull, x)
-    return Distributions.ccdf(d,x)
-end
+# function ccdf2(d::Weibull, x)
+#     return Distributions.ccdf(d,x)
+# end
 
-function cdf2(d::Weibull, x)
-    Distributions.cdf(d,x)
-end
+# function cdf2(d::Weibull, x)
+#     Distributions.cdf(d,x)
+# end
 
-function cdf2(d::Gamma, x)
+function cdf(d::Gamma, x)
     shp, scl = params(d)
     return gamma_cdf(shp, x/scl)
 end
 
-function ccdf2(d::Gamma, x)
+function ccdf(d::Gamma, x)
     shp, scl = params(d)
     return gamma_ccdf(shp, x/scl)
 end
@@ -138,5 +138,5 @@ function logeqpdf(d::UnivariateDistribution,x)
 end
 
 function eqpdf(d::UnivariateDistribution,x)
-    ccdf2(d,x)/mean(d)
+    ccdf(d,x)/mean(d)
 end

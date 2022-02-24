@@ -33,7 +33,7 @@ shape(d::LogLogistic) = d.a
 scale(d::LogLogistic) = d.b
 
 params(d::LogLogistic) = (d.a, d.b)
-@inline partype(d::LogLogistic{T}) where {T<:Real} = T
+#@inline partype(d::LogLogistic{T}) where {T<:Real} = T
 
 
 #### Statistics

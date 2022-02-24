@@ -1,7 +1,7 @@
 #####
 #inteval censored
 #####
-function make_ic(rng::AbstractRNG, dt::ContinuousUnivariateDistribution, N::Int)
+function make_ic(rng::AbstractRNG, dt::UnivariateDistribution, N::Int)
     ER = zeros(N)
     EL = zeros(N)
     S = zeros(N)
@@ -20,7 +20,7 @@ function make_ic(rng::AbstractRNG, dt::ContinuousUnivariateDistribution, N::Int)
 end
 
 #inteval censored (infinite)
-function make_ic(rng::AbstractRNG, dt::ContinuousUnivariateDistribution, N::Int, p)
+function make_ic(rng::AbstractRNG, dt::UnivariateDistribution, N::Int, p)
     ER = zeros(N)
     EL = zeros(N)
     S = zeros(N)

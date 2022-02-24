@@ -59,7 +59,7 @@ function ccdf(d::GeneralizedGamma, x)
     return gamma_ccdf(shp/pwr, (x/scl)^pwr)
 end
 
-ccdf2(d::GeneralizedGamma, x) = ccdf(d::GeneralizedGamma, x)
+#ccdf2(d::GeneralizedGamma, x) = ccdf(d::GeneralizedGamma, x)
 
 function pdf(d::GeneralizedGamma, x)
     shp, scl, pwr = params(d)
