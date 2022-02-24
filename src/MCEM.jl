@@ -39,7 +39,7 @@ function MCEMic(rng, dist, iter, EL, ER, S)
     lp = zeros(iter)
     pars = params(dist)
     for it in 1:iter
-    ytilde = rand(rng, truncated(dist,S[i]-ER[i],S[i]-EL[i])) for i in eachindex(S)]
+    ytilde = [rand(rng, truncated(dist,S[i]-ER[i],S[i]-EL[i])) for i in eachindex(S)]
     dist = Mstep(dist, ytilde)
     lp[it] = mean(x-> -logpdf(dist,x), ytilde)
     end
