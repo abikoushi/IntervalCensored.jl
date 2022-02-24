@@ -89,10 +89,10 @@ function quantile(d::GeneralizedGamma, p)
     return scl*(r^inv(pwr))
 end
 
-# function rand(rng::AbstractRNG, d::GeneralizedGamma)
-#     p = rand(rng)
-#     return quantile(d, p)
-# end
+function rand(rng::AbstractRNG, d::GeneralizedGamma)
+    p = rand(rng)
+    return quantile(d, p)
+end
 
 
 #### Statistics

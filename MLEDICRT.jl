@@ -15,7 +15,8 @@ using DataFrames
 #]add "./projects/IntervalCensored"
 #]add "https://github.com/abikoushi/IntervalCensored.jl"
 using IntervalCensored
-
+cdf(Weibull(2,2),3)
+ccdf(IntervalCensored.GeneralizedGamma(2.0,2.0,2.0),3)
 function sim_dic(td, md, N, iter, seed)
     rng = MersenneTwister(seed)
     aic1 = zeros(iter)

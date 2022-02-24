@@ -83,13 +83,17 @@ function ccdf(d::LogLogistic, x)
     return one(x) - (x^a) / (b^a +x^a)
 end
 
-ccdf2(d::LogLogistic, x) = ccdf(d::LogLogistic, x)
 
 # logcdf(d::Logistic, x::Real) = -log1pexp(-zval(d, x))
 # logccdf(d::Logistic, x::Real) = -log1pexp(zval(d, x))
 function quantile(d::LogLogistic,p)
     a, b = params(d)
     return b * ((p)/(1-p))^inv(a)
+end
+
+function rand(rng::AbstractRNG, d::LogLogistic)
+    p = rand(rng)
+    return quantile(d, p)
 end
 
 # quantile(d::Logistic, p::Real) = xval(d, logit(p))
