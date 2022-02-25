@@ -30,17 +30,12 @@ struct GeneralizedGamma <: ContinuousUnivariateDistribution
 end
 
 #### Parameters
-
 params(d::GeneralizedGamma) = (d.a, d.b, d.k)
-
 shape(d::GeneralizedGamma) = d.a
 scale(d::GeneralizedGamma) = d.b
-power(d::GeneralizedGamma) = 1 / d.k
-
-# partype(d::GeneralizedGamma{T}) where {T} = T
+power(d::GeneralizedGamma) = d.k
 
 #### Evaluation
-
 function gamma_cdf(a, x)
     return gamma_inc(a,x,0)[1]
 end
@@ -58,8 +53,6 @@ function ccdf(d::GeneralizedGamma, x)
     shp, scl, pwr = params(d)
     return gamma_ccdf(shp/pwr, (x/scl)^pwr)
 end
-
-#ccdf2(d::GeneralizedGamma, x) = ccdf(d::GeneralizedGamma, x)
 
 function pdf(d::GeneralizedGamma, x)
     shp, scl, pwr = params(d)
@@ -79,9 +72,6 @@ function eqcdf(d::GeneralizedGamma, x)
     end
     return out
 end
-
-# p = -log.(rand(3))
-# plot(x -> eqcdf(GeneralizedGamma(p[1],p[2],p[3]),x), 0, 20, legend=false)
 
 function quantile(d::GeneralizedGamma, p)
     shp, scl, pwr = params(d)
