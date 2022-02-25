@@ -10,7 +10,7 @@ function Mstep(d::Gamma, y)
     a = shape(d)
     ia = inv(a)
     a = inv(ia + (-mlog + logm + log(a) - digamma(a)) / ((a^2) * (ia - trigamma(a))))
-    b = mean(ytilde) / a
+    b = mean(y) / a
     return Gamma(a,b)
 end
 

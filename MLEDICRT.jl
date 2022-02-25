@@ -36,7 +36,7 @@ end
 
 rng = MersenneTwister(1234)
 dat = make_dic(rng, Weibull(0.5,5), 100)
-fit = MCEMdic(rng, Weibull(1.0,4.0), 100, dat[1], dat[2], dat[3], dat[4])
+fit = MCEMdic(rng, Gamma(1.0,4.0), 100, dat[1], dat[2], dat[3], dat[4])
 mean(Weibull(1.5,5))
 @time simout_dic = sim_dic(Exponential(2.0), Exponential(2.5), 100, 5, 1)
 mean(simout_ic[4], dims=1)
