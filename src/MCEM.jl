@@ -18,8 +18,9 @@ function Mstep(d::Weibull, y)
     a, b = params(d)
     n = length(y)
     powa = (y.^a)'
+    logy = log.(y)
 
-    fa = n*(inv(a) - inv(b)) + sum(logy) - n*log(b) - powa*(log(y)-log(b))/(b^a)
+    fa = n*(inv(a) - inv(b)) + sum(logy)- n*log(b) - powa*(logy-log(b))/(b^a)
     dfa = -n*inv(a^2) - (powa*(logy-log(b)).^2)/(b^a)
 
     Delta = fx / dfx
