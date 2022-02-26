@@ -3,14 +3,17 @@ using SpecialFunctions
 using Random
 using Plots, StatsPlots
 using ForwardDiff
-import Distributions: ccdf, cdf, logpdf, pdf, mean, rand
+import LinearAlgebra: dot
+import Distributions: ccdf, cdf, logpdf, pdf,
+       mean, rand, params, shape, scale
 
-abstract type GeneralizedGammaFamily <: ContinuousUnivariateDistribution end
-abstract type Gamma <: GeneralizedGammaFamily end
-abstract type Weibull <: GeneralizedGammaFamily end
-abstract type Exponential <: GeneralizedGammaFamily end
+# abstract type survdist end
+# abstract type GeneralizedGamma <: survdist end
+# abstract type Gamma <: survdist end
+# abstract type Weibull <: survdist end
+# abstract type Exponential <: survdist end
 
-struct GeneralizedGamma <: GeneralizedGammaFamily
+struct GeneralizedGamma <: ContinuousUnivariateDistribution
     a
     b
     k
@@ -18,12 +21,11 @@ end
 
 #### Parameters
 params(d::GeneralizedGamma) = (d.a, d.b, d.k)
-logparams(d::GeneralizedGamma) = (log(d.a), log(d.b), log(d.k))
 shape(d::GeneralizedGamma) = d.a
 scale(d::GeneralizedGamma) = d.b
 power(d::GeneralizedGamma) = d.k
 
-# moment
+# Moment
 function mean(d::GeneralizedGamma)
     shp, scl, pwr = params(d)
     return scl*gamma((shp+1)/pwr)/gamma(shp/pwr)
@@ -35,34 +37,33 @@ function logmean(d::GeneralizedGamma)
 end
 
 # Evaluation
-function gamma_cdf(a::Number, x::Number)
+function gamma_cdf(a::Real, x::Real)
     return gamma_inc(a,x,0)[1]
 end
 
-function gamma_ccdf(a::Number, x::Number)
+function gamma_ccdf(a::Real, x::Real)
     return gamma_inc(a,x,0)[2]
 end
 
-#where {T} の意味わかっていない
-function gamma_cdf(a::ForwardDiff.Dual{T}, x::Number) where {T}
+function gamma_cdf(a::ForwardDiff.Dual{T}, x::Real) where {T} #where {T} の意味わかっていない
     y = gamma_inc(ForwardDiff.value(a),x,0)[1]
     y_a = (log(x) - digamma(a))*y-exp(a*log(x)-log(a)-loggamma(a+1))*pFq(SA[a,a], SA[a+1,a+1], -x)
     return ForwardDiff.Dual{T}(y,y_a)
 end
 
-function gamma_cdf(a::Number, x::ForwardDiff.Dual{T}) where {T}
+function gamma_cdf(a::Real, x::ForwardDiff.Dual{T}) where {T}
     y = gamma_inc(a,ForwardDiff.value(x),0)[1]
     y_x = exp(-x + (a-1)*log(x) - loggamma(a))
     return ForwardDiff.Dual{T}(y,y_x)
 end
 
-function gamma_ccdf(a::ForwardDiff.Dual{T}, x::Number) where {T}
+function gamma_ccdf(a::ForwardDiff.Dual{T}, x::Real) where {T}
     y = gamma_inc(ForwardDiff.value(a),x,0)[2]
     y_a = -((log(x) - digamma(a))*(1-y)-exp(a*log(x)-log(a)-loggamma(a+1))*pFq(SA[a,a], SA[a+1,a+1], -x))
     return ForwardDiff.Dual{T}(y,y_a)
 end
 
-function gamma_ccdf(a::Number, x::ForwardDiff.Dual{T}) where {T}
+function gamma_ccdf(a::Real, x::ForwardDiff.Dual{T}) where {T}
     y = gamma_inc(a,ForwardDiff.value(x),0)[2]
     y_x = -exp(-x + (a-1)*log(x) - loggamma(a))
     return ForwardDiff.Dual{T}(y,y_x)
@@ -90,7 +91,7 @@ function gamma_ccdf(a::ForwardDiff.Dual{T}, x::ForwardDiff.Dual{T}) where {T}
     return ForwardDiff.Dual{T}(y,ga,gx)
 end
 
-function cdf(d::Gamma, x)
+function cdf(d::Gamma, x::Real)
     if x < zero(x)
         return zero(x)
     else
@@ -99,7 +100,7 @@ function cdf(d::Gamma, x)
     end
 end
 
-function ccdf(d::Gamma, x)
+function ccdf(d::Gamma, x::Real)
     if x < zero(x)
         return one(x)
     else
@@ -108,7 +109,7 @@ function ccdf(d::Gamma, x)
     end
 end
 
-function cdf(d::GeneralizedGamma, x)
+function cdf(d::GeneralizedGamma, x::Real)
     if x < zero(x)
         return zero(x)
     else
@@ -117,7 +118,7 @@ function cdf(d::GeneralizedGamma, x)
     end
 end
 
-function ccdf(d::GeneralizedGamma, x)
+function ccdf(d::GeneralizedGamma, x::Real)
     if x < zero(x)
         return one(x)
     else
@@ -126,7 +127,7 @@ function ccdf(d::GeneralizedGamma, x)
     end
 end
 
-function pdf(d::GeneralizedGamma, x)
+function pdf(d::GeneralizedGamma, x::Real)
     if x < zero(x)
         return zero(x)
     else
@@ -135,7 +136,7 @@ function pdf(d::GeneralizedGamma, x)
     end
 end
 
-function logpdf(d::GeneralizedGamma, x)
+function logpdf(d::GeneralizedGamma, x::Real)
     if x < zero(x)
         return zero(x)
     else
@@ -144,7 +145,7 @@ function logpdf(d::GeneralizedGamma, x)
     end
 end
 
-function eqcdf(d::GeneralizedGamma, x)
+function eqcdf(d::GeneralizedGamma, x::Real)
     if x < zero(x)
         return zero(x)
     else
@@ -154,27 +155,10 @@ function eqcdf(d::GeneralizedGamma, x)
     end
 end
 
-function quantile(d::GeneralizedGamma, p)
+function quantile(d::GeneralizedGamma, p::Real)
     shp, scl, pwr = params(d)
     r = gamma_inc_inv(shp/pwr, p, 1-p)
     return scl*(r^inv(pwr))
-end
-
-function Mstep(d::GeneralizedGamma, y)
-    shp, scl, pwr = params(d)
-    v = [pwr, shp]
-    n = length(y)
-    #log(pwr)-shp*log(scl) + (shp-1)*log(x) -(x/scl)^pwr -loggamma(shp/pwr)
-    g1 = n/pwr - (log.(y/scl)' * (y/scl).^pwr) + n*digamma(shp/pwr) * (shp/pwr^2)
-    g2 = -n*log(scl) + sum(log, y) - n*digamma(shp/pwr)/pwr
-    h11 = -n/pwr^2 - (log.(y/scl).^2)' * (y/scl).^pwr - n*trigamma(shp/pwr) * (shp^2/pwr^4) - 2*n*digamma(shp/pwr) * (shp/pwr^3)
-    h12 = n*(trigamma(shp/pwr)*(shp/pwr^3) + digamma(shp/pwr)/(pwr^2))
-    h22 = -n*trigamma(shp/pwr)/(pwr^2)
-    g = [g1, g2]
-    H = [[h11, h12] [h12, h22]]
-    v -= H \ g
-    b = (mean(x -> x^v[1], y)^inv(v[1]))
-    return GeneralizedGamma(v[2], b, v[1]), mean(logpdf.(GeneralizedGamma(v[2], b, v[1]),y))
 end
 
 function rand(rng::AbstractRNG, d::GeneralizedGamma)
@@ -182,23 +166,76 @@ function rand(rng::AbstractRNG, d::GeneralizedGamma)
     return quantile(d, p)
 end
 
+#d = GeneralizedGamma(2.0, 2.0, 2.0)
 function Mstep(d::GeneralizedGamma, y)
     shp, scl, pwr = params(d)
-    v = [log(pwr), log(shp)]
-    n = length(y)
-    f(x,pwr,shp)=log(pwr)-shp*log(scl) + (shp-1)*log(x) - (x/scl)^pwr -loggamma(shp/pwr)
-    g = ForwardDiff.gradient(x -> sum(y->f(y,exp(x[1]),exp(x[2])), y), v)
+    v = [log(shp), log(pwr)]
+    g = ForwardDiff.gradient(v -> sum(y->logpdf(GeneralizedGamma(exp(v[1]),scl,exp(v[2])),y), y), v)
     H = ForwardDiff.hessian(x -> sum(y->f(y,exp(x[1]),exp(x[2])), y), v)
     v -= H \ g
-    b = mean(x -> x^exp(v[1]), y)^exp(-v[1])
-    return GeneralizedGamma(exp(v[2]), b, exp(v[1]))
+    b = mean(x -> x^exp(v[2]), y)^exp(-v[2])
+    return GeneralizedGamma(exp(v[1]), b, exp(v[2]))
 end
 
-y = rand(MersenneTwister(444), GeneralizedGamma(2.0,2.0,2.0), 1000)
+function Mstep(d::Gamma, y)
+    shp, scl = params(d)
+    rho = log(shp)
+    meanlogy = mean(log,y)
+    #f(x,shp) = -shp*log(scl) + (shp-1)*log(x) - (x/scl) -loggamma(shp)
+    g = shp*log(scl) - shp*meanlogy + digamma(shp)*shp
+    H = shp*log(scl) - shp*meanlogy + trigamma(shp)*shp^2 + digamma(shp)*shp
+    rho -= g/H
+    b = mean(y)/exp(rho)
+    return Gamma(exp(rho), b)
+end
+
+function Mstep(d::Weibull, y)
+    shp, scl = params(d)
+    rho = log(shp)
+    logy = sum(log, y)
+    n = length(y)
+    A = ((y/scl).^shp)'*(log.(y/scl))
+    B = ((y/scl).^shp)'*(log.(y/scl).^2)
+    #f(x,shp) = log(shp)-shp*log(scl) + (shp-1)*log(x) - (x/scl)^shp
+    g = n*(shp*log(scl)-1) - shp*logy + shp*A
+    H = n*(shp*log(scl)-1) - shp*logy + shp*A + (shp^2)*B
+    rho -= g/H
+    b = mean(x -> x^exp(rho), y)^exp(-rho)
+    return Weibull(exp(rho), b)
+end
+
+y = rand(MersenneTwister(444), GeneralizedGamma(2.0,2.0,2.0), 100)
 density(y, legend=false)
 plot!(x -> pdf(GeneralizedGamma(2.0,2.0,2.0),x))
-plot!(x -> pdf(d,x))
 mean(x->logpdf(GeneralizedGamma(2.0,2.0,2.0),x),y)
-d = Mstep(GeneralizedGamma(2.0,2.0,2.0), y)
+d = Mstep(GeneralizedGamma(1.0,1.0,1.0), y)
 mean(x->logpdf(d,x),y)
 d = Mstep(d, y)
+
+y = rand(MersenneTwister(111), Gamma(2.0,2.0), 100)
+d = Mstep(Gamma(1.0,1.0), y)
+
+
+function mynewton(d,y)
+    p = zeros(10,2)
+    for i in 1:10
+    d = Mstep(d, y)
+    p[i,:] .= log.(params(d))
+    end
+    return p
+end
+
+y = rand(MersenneTwister(12345), Weibull(2.0,2.0), 100)
+theta = mynewton(Weibull(3,1),y)
+maximum(theta[:,1])
+minimum(theta[:,1])
+maximum(theta[:,2])
+minimum(theta[:,2])
+av = 0.8:0.01:1.5
+bv =  0.65:0.01:0.81
+Xv = repeat(reshape(av, 1, :), length(bv), 1)
+Yv = repeat(bv, 1, length(av))
+Zv = map((a,b) -> exp(mean(y -> logpdf(Weibull(exp(a),exp(b)),y), y)), Xv, Yv)
+contour(av, bv, Zv, linewidth=1, colorbar=false)
+scatter!(theta[:,1],theta[:,2],legend=false)
+#plot(Xv,Yv,Zv,st=:surface,camera=(70,40))
