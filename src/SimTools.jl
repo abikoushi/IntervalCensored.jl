@@ -104,10 +104,10 @@ function make_dic(rng::AbstractRNG, dt::ContinuousUnivariateDistribution, N::Int
         us = rand(rng)
         tau_e = -log(rand(rng))
         tau_s = -log(rand(rng))
-        ER[i] = at + tau_e * ue
         EL[i] = max(0.0, at - tau_e * (1.0 - ue))
         SR[i] = S + tau_s * us
         SL[i] = max(0.0, S - tau_s * (1.0 - us))
+        ER[i] = min(SR[i], at + tau_e * ue)
     end
     return EL, ER, SL, SR
 end
