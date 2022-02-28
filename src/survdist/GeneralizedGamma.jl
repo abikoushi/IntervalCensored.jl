@@ -44,33 +44,68 @@ function gamma_ccdf(a, x)
     return gamma_inc(a,x,0)[2]
 end
 
-function cdf(d::GeneralizedGamma, x)
-    shp, scl, pwr = params(d)
-    return gamma_cdf(shp/pwr, (x/scl)^pwr)
-end
-
-function ccdf(d::GeneralizedGamma, x)
-    shp, scl, pwr = params(d)
-    return gamma_ccdf(shp/pwr, (x/scl)^pwr)
-end
-
-function pdf(d::GeneralizedGamma, x)
-    shp, scl, pwr = params(d)
-    return (pwr/(scl^shp))*x^(shp-1)*exp(-(x/scl)^pwr)/gamma(shp/pwr)
-end
-
-function logpdf(d::GeneralizedGamma, x)
-    shp, scl, pwr = params(d)
-    return log(pwr)-shp*log(scl) + (shp-1)*log(x) -(x/scl)^pwr -loggamma(shp/pwr)
-end
-
-function eqcdf(d::GeneralizedGamma, x)
-    shp, scl, pwr = params(d)
-    out = zero(x)
-    if x >= zero(x)
-      out = (one(x) + x*gamma(shp/pwr)*gamma_ccdf(shp/pwr, (x/scl)^pwr)/(scl*gamma((shp+1)/pwr)) - gamma_ccdf((shp+1)/pwr, (x/scl)^pwr))
+function cdf(d::Gamma, x::Real)
+    if x < zero(x)
+        return zero(x)
+    else
+        shp, scl = params(d)
+        return gamma_cdf(shp, x/scl)
     end
-    return out
+end
+
+function ccdf(d::Gamma, x::Real)
+    if x < zero(x)
+        return one(x)
+    else
+        shp, scl = params(d)
+        return gamma_ccdf(shp, x/scl)
+    end
+end
+
+function cdf(d::GeneralizedGamma, x::Real)
+    if x < zero(x)
+        return zero(x)
+    else
+        shp, scl, pwr = params(d)
+        return gamma_cdf(shp/pwr, (x/scl)^pwr) 
+    end
+end
+
+function ccdf(d::GeneralizedGamma, x::Real)
+    if x < zero(x)
+        return one(x)
+    else
+        shp, scl, pwr = params(d)
+        return gamma_ccdf(shp/pwr, (x/scl)^pwr)
+    end
+end
+
+function pdf(d::GeneralizedGamma, x::Real)
+    if x < zero(x)
+        return zero(x)
+    else
+        shp, scl, pwr = params(d)
+        return (pwr/(scl^shp))*x^(shp-1)*exp(-(x/scl)^pwr)/gamma(shp/pwr)
+    end
+end
+
+function logpdf(d::GeneralizedGamma, x::Real)
+    if x < zero(x)
+        return zero(x)
+    else
+        shp, scl, pwr = params(d)
+        return log(pwr)-shp*log(scl) + (shp-1)*log(x) - (x/scl)^pwr -loggamma(shp/pwr)
+    end
+end
+
+function eqcdf(d::GeneralizedGamma, x::Real)
+    if x < zero(x)
+        return zero(x)
+    else
+        shp, scl, pwr = params(d)
+        out = (one(x) + x*gamma(shp/pwr)*gamma_ccdf(shp/pwr, (x/scl)^pwr)/(scl*gamma((shp+1)/pwr)) - gamma_ccdf((shp+1)/pwr, (x/scl)^pwr))
+        return out
+    end
 end
 
 function quantile(d::GeneralizedGamma, p)

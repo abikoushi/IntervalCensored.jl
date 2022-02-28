@@ -8,7 +8,8 @@ using ForwardDiff
 using StaticArrays
 using StatsFuns
 import LinearAlgebra: dot
-import Distributions: cdf, ccdf, pdf, logpdf, mean, shape, scale, params, rand
+import Distributions: ccdf, cdf, logpdf, pdf, quantile,
+       mean, rand, params, shape, scale
 
 include("NonParametric.jl")
 include("SimTools.jl")

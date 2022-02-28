@@ -4,30 +4,67 @@ function Mstep(d::LogNormal, y)
     return LogNormal(mu, sigma)
 end
 
+function Mstep(d::GeneralizedGamma, y)
+    shp, scl, pwr = params(d)
+    v = [log(shp), log(pwr)]
+    g = ForwardDiff.gradient(v -> sum(y-> -logpdf(GeneralizedGamma(exp(v[1]),scl,exp(v[2])),y)), v)
+    H = ForwardDiff.hessian(x -> sum(y-> -logpdf(GeneralizedGamma(exp(v[1]),scl,exp(v[2])),y)), v)
+    v -= H \ g
+    b = mean(x -> x^exp(v[2]), y)^exp(-v[2])
+    return GeneralizedGamma(exp(v[1]), b, exp(v[2]))
+end
+
 function Mstep(d::Gamma, y)
-    mlog = log(mean(y))
-    logm = mean(log, y)
-    a = shape(d)
-    ia = inv(a)
-    a = inv(ia + (-mlog + logm + log(a) - digamma(a)) / ((a^2) * (ia - trigamma(a))))
-    b = mean(y) / a
-    return Gamma(a,b)
+    shp, scl = params(d)
+    rho = log(shp)
+    meanlogy = mean(log,y)
+    #f(x,shp) = -shp*log(scl) + (shp-1)*log(x) - (x/scl) -loggamma(shp)
+    g = shp*log(scl) - shp*meanlogy + digamma(shp)*shp
+    H = shp*log(scl) - shp*meanlogy + trigamma(shp)*shp^2 + digamma(shp)*shp
+    rho -= g/H
+    b = mean(y)/exp(rho)
+    return Gamma(exp(rho), b)
 end
 
 function Mstep(d::Weibull, y)
-    a, b = params(d)
+    shp, scl = params(d)
+    rho = log(shp)
+    logy = sum(log, y)
     n = length(y)
-    powa = (y.^a)'
-    logy = log.(y)
-
-    fa = n*(inv(a) - inv(b)) + sum(logy)- n*log(b) - powa*(logy-log(b))/(b^a)
-    dfa = -n*inv(a^2) - (powa*(logy-log(b)).^2)/(b^a)
-
-    Delta = fx / dfx
-    a += Delta
-    b = mean(x -> x^a, ytilde)^inv(a)
-    return Weibull(a,b)
+    A = ((y/scl).^shp)'*(log.(y/scl))
+    B = ((y/scl).^shp)'*(log.(y/scl).^2)
+    #f(x,shp) = log(shp)-shp*log(scl) + (shp-1)*log(x) - (x/scl)^shp
+    g = n*(shp*log(scl)-1) - shp*logy + shp*A
+    H = n*(shp*log(scl)-1) - shp*logy + shp*A + (shp^2)*B
+    rho -= g/H
+    b = mean(x -> x^exp(rho), y)^exp(-rho)
+    return Weibull(exp(rho), b)
 end
+
+# function Mstep(d::Gamma, y)
+#     mlog = log(mean(y))
+#     logm = mean(log, y)
+#     a = shape(d)
+#     ia = inv(a)
+#     a = inv(ia + (-mlog + logm + log(a) - digamma(a)) / ((a^2) * (ia - trigamma(a))))
+#     b = mean(y) / a
+#     return Gamma(a,b)
+# end
+
+# function Mstep(d::Weibull, y)
+#     a, b = params(d)
+#     n = length(y)
+#     powa = (y.^a)'
+#     logy = log.(y)
+
+#     fa = n*(inv(a) - inv(b)) + sum(logy)- n*log(b) - powa*(logy-log(b))/(b^a)
+#     dfa = -n*inv(a^2) - (powa*(logy-log(b)).^2)/(b^a)
+
+#     Delta = fx / dfx
+#     a += Delta
+#     b = mean(x -> x^a, ytilde)^inv(a)
+#     return Weibull(a,b)
+# end
 
 function Mstep(d::Exponential, y)
     b = mean(y)
