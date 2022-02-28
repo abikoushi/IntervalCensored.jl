@@ -14,10 +14,10 @@ import Distributions: ccdf, cdf, logpdf, pdf, quantile,
 include("NonParametric.jl")
 include("SimTools.jl")
 include("calclp.jl")
-include("MCEM.jl")
 include("./survdist/survdist.jl")
 include("./survdist/GeneralizedGamma.jl")
 include("./survdist/LogLogistic.jl")
+include("MCEM.jl")
 
 export calclp_ic, calclp_icrt, calclp_dic, 
  make_ic, make_icrt, make_dic, make_dicrt,
