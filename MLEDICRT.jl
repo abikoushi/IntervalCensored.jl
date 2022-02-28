@@ -34,22 +34,11 @@ function sim_dic(td, md, N, iter, seed)
     return aic1, aic2, ge, theta
 end
 
-rng = MersenneTwister(123)
-EL, ER, SL, SR = make_dic(rng, Weibull(1.5,5), 100)
-ys = zeros(100)
-for i in 1:100
-    u = rand(rng)
-    E = EL[i] + (ER[i]-EL[i])*u
-    ys[i] = rand(rng, truncated(Weibull(1.5,5), SL[i]-E, SR[i]-E))
-end
-rand(rng, truncated(Weibull(1.5,5), -1, 2))
-findall(ys.==0.0)
-EL[91] + ER[91]-EL[91]
-EL[91], ER[91], SL[91], SR[91]
-histogram(ys)
+dat = make_dic(rng, Weibull(1.5,5), 100)
 fit = MCEMdic(rng, Weibull(1.5,5.0), 100, dat[1], dat[2], dat[3], dat[4])
-mean(Weibull(1.5,5))
-@time simout_dic = sim_dic(Exponential(2.0), Exponential(2.5), 100, 5, 1)
+quadgk(x -> -logpdf(fit[1],x)*pdf(Weibull(1.5,5),x), 0, Inf)
+@time simout_dic = sim_dic(Weibull(1.5,5), Weibull(2,5), 100, 5, 1)
+
 mean(simout_ic[4], dims=1)
 
 ms = [mean(simout_ic[1]-simout_ic[3]), mean(simout_ic[2]-simout_ic[3])]
