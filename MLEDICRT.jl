@@ -8,7 +8,7 @@ using DataFrames
 #using RCall
 #using Optim
 #using ForwardDiff
-#using StatsFuns
+using StatsFuns
 #using SpecialFunctions
 #using LinearAlgebra
 #using ProgressMeter
@@ -17,7 +17,7 @@ using DataFrames
 using IntervalCensored
 
 function sim_dic(td, md, N, iter, seed)
-    rng = MersenneTwister(seed)
+    rng = MersenneTwister()
     aic1 = zeros(iter)
     aic2 = zeros(iter)
     ge = zeros(iter)
@@ -27,23 +27,39 @@ function sim_dic(td, md, N, iter, seed)
         dat = make_dic(rng, td, N)
         fit = MCEMdic(rng, md, 10, dat[1], dat[2], dat[3], dat[4])
         ge[i] = quadgk(x -> -logpdf(fit[1],x)*pdf(td,x), 0, Inf)[1]
-        aic1[i] = (calclp_dic(fit[1], dat[1], dat[2], dat[3], dat[4]) + K)/N
+        aic1[i] = (calclp_dic2(fit[1], dat[1], dat[2], dat[3], dat[4]) + K)/N
         aic2[i] = fit[2][end]+K/N
         theta[i,:] .= params(fit[1])
     end
     return aic1, aic2, ge, theta
 end
 
-dat = make_dic(rng, Weibull(1.5,5), 100)
-fit = MCEMdic(rng, Weibull(1.5,5.0), 100, dat[1], dat[2], dat[3], dat[4])
-quadgk(x -> -logpdf(fit[1],x)*pdf(Weibull(1.5,5),x), 0, Inf)
-@time simout_dic = sim_dic(Weibull(1.5,5), Weibull(2,5), 100, 5, 1)
+function calclp_dic2(d, EL, ER, SL, SR)
+    ll = zero(EL[1])
+    logmu = log(mean(d))
+    for i in eachindex(EL)
+        if ER[i] < SL[i]
+            ll += logmu + logsubexp(log(eqcdf(d,SR[i]-ER[i])-eqcdf(d,SL[i]-ER[i])),log(eqcdf(d,SR[i]-EL[i])-eqcdf(d,SL[i]-EL[i]))) -
+             log(ER[i] - EL[i]) - log(SR[i] - SL[i])
+        elseif EL[i] < SL[i] <= ER[i] < SR[i]
+            ll += logmu + logsubexp(log(eqcdf(d,SR[i]-ER[i])),log(eqcdf(d,SR[i]-EL[i])-eqcdf(d,SL[i]-EL[i])))
+             log(ER[i]-EL[i]) - log(SR[i] - ER[i])
+        elseif EL[i] < SL[i] < SR[i] <= ER[i]
+            ll += logmu + logsubexp(eqcdf(d,SR[i]-EL[i]), eqcdf(d,SL[i]-EL[i])) - 
+              log(ER[i]-EL[i]) - log(SR[i] - EL[i])
+        end
+    end
+    return -ll
+end
 
-mean(simout_ic[4], dims=1)
+@time simout_dic = sim_dic(Weibull(1.5,5), Weibull(2.0,5), 100, 100, 1234)
+ms = [mean(simout_dic[1]-simout_dic[3]), mean(simout_dic[2]-simout_dic[3])]
+ss = [std(simout_dic[1]-simout_dic[3]), std(simout_dic[2]-simout_dic[3])]
+df = stack(DataFrame(AIC1=simout_dic[1]-simout_dic[3], AIC2=simout_dic[2]-simout_dic[3]))
+@df df violin(:variable, :value, fill="white", legend=false, tick_direction=:out, xtickfontsize=12, trim=false)
+scatter!(["AIC1","AIC2"], ms[1:2], yerror = ss[1:2], color="black", ms=6)
+Plots.abline!(0, 0, ls=:dash, color="black")
 
-ms = [mean(simout_ic[1]-simout_ic[3]), mean(simout_ic[2]-simout_ic[3])]
-ss = [std(simout_ic[1]-simout_ic[3]), std(simout_ic[2]-simout_ic[3])]
-df = stack(DataFrame(AIC1=simout_ic[1]-simout_ic[3], AIC2=simout_ic[2]-simout_ic[3]))
 
 function sim_ic(td, md, N, iter, seed)
     rng = MersenneTwister(seed)
