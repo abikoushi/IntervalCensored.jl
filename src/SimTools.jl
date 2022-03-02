@@ -135,7 +135,7 @@ function make_dic(rng::AbstractRNG, dt::ContinuousUnivariateDistribution, N::Int
         end
         us = rand(rng)
         SR[i] = S + tau_s * us
-        SL[i] = max(0.0, S - tau_s * (1.0 - us))
+        SL[i] = max(EL[i], S - tau_s * (1.0 - us))
     end
     return EL, ER, SL, SR
 end
@@ -164,7 +164,7 @@ function make_dicrt(rng::AbstractRNG, dt::ContinuousUnivariateDistribution, N::I
         end
         us = rand(rng)
         SR[i] = S + tau_s * us
-        SL[i] = max(0.0, S - tau_s * (1 - us))
+        SL[i] = max(EL[i], S - tau_s * (1 - us))
         d[i] = SR <= Tmax
     end
     return EL[d], ER[d], SL[d], SR[d]
@@ -194,7 +194,7 @@ function make_dicrt(rng::AbstractRNG, dt::ContinuousUnivariateDistribution, N::I
         end
         us = rand(rng)
         SR[i] = S + tau_s * us
-        SL[i] = max(0.0, S - tau_s * (1.0 - us))
+        SL[i] = max(EL[i], S - tau_s * (1.0 - us))
         d[i] = SR <= Tmax
     end
     return EL[d], ER[d], SL[d], SR[d]
