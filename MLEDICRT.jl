@@ -41,12 +41,12 @@ function calclp_dic2(d, EL, ER, SL, SR)
         if ER[i] < SL[i]
             ll += logmu + logsubexp(log(eqcdf(d,SR[i]-ER[i])-eqcdf(d,SL[i]-ER[i])),log(eqcdf(d,SR[i]-EL[i])-eqcdf(d,SL[i]-EL[i]))) -
              log(ER[i] - EL[i]) - log(SR[i] - SL[i])
-        elseif EL[i] < SL[i] <= ER[i] < SR[i]
+        elseif SL[i] <= ER[i] < SR[i]
             ll += logmu + logsubexp(log(eqcdf(d,SR[i]-ER[i])),log(eqcdf(d,SR[i]-EL[i])-eqcdf(d,SL[i]-EL[i])))
-             log(ER[i]-EL[i]) - log(SR[i] - ER[i])
-        elseif EL[i] < SL[i] < SR[i] <= ER[i]
-            ll += logmu + logsubexp(eqcdf(d,SR[i]-EL[i]), eqcdf(d,SL[i]-EL[i])) - 
-              log(ER[i]-EL[i]) - log(SR[i] - EL[i])
+             log(ER[i] - EL[i]) - log(SR[i] - SL[i])
+        elseif SL[i] < SR[i] <= ER[i]
+            ll += logmu + logsubexp(log(eqcdf(d,SR[i]-EL[i])),log(eqcdf(d,SL[i]-EL[i]))) - 
+              log(ER[i] - EL[i]) - log(SR[i] - SL[i])
         end
     end
     return -ll

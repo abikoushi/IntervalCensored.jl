@@ -70,23 +70,30 @@ function eqcdf(d::LogNormal, x)
 end
 
 function eqcdf(d::Weibull, x)
+    out = zero(x)
+    if x >= zero(x)
     shp, scl = params(d)
-    return gamma_cdf(inv(shp),(max(x, 0) / scl) ^ shp)
+    out = gamma_cdf(inv(shp),(max(x, 0) / scl) ^ shp)
+    end
+    return out
 end
 
 function eqcdf(d::Gamma, x)
-    shp, scl = params(d)
     out = zero(x)
-    if x > 0.0
+    if x >= zero(x)
+        shp, scl = params(d)
         out = gamma_cdf(shp+1, x/scl)+(x/scl)*gamma_ccdf(shp, x/scl)/shp
     end
     return out
 end
 
 function eqcdf(d::Exponential, x)
-    b = rate(d)
-    z = b * exp(-b * max(x, 0))
-    return x < 0 ? zero(z) : z
+    out = zero(x)
+    if x >= zero(x)
+        b = rate(d)
+        out = b * exp(-b * x)
+    end
+    return out
 end
 
 function  logmean(d::LogNormal)

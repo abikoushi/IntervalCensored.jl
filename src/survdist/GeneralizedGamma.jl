@@ -99,9 +99,8 @@ function logpdf(d::GeneralizedGamma, x::Real)
 end
 
 function eqcdf(d::GeneralizedGamma, x::Real)
-    if x < zero(x)
-        return zero(x)
-    else
+    out = zero(x)
+    if x >= zero(x)
         shp, scl, pwr = params(d)
         out = (one(x) + x*gamma(shp/pwr)*gamma_ccdf(shp/pwr, (x/scl)^pwr)/(scl*gamma((shp+1)/pwr)) - gamma_ccdf((shp+1)/pwr, (x/scl)^pwr))
         return out
