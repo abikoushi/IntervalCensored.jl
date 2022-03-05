@@ -4,29 +4,29 @@ function Mstep(d::LogNormal, y)
     return LogNormal(mu, sigma)
 end
 
-function Mstep(d::GeneralizedGamma, y)
+function Mstep(d::GeneralizedGamma, y, lr=1)
     shp, scl, pwr = params(d)
     v = [log(shp), log(pwr)]
     g = ForwardDiff.gradient(v -> sum(y-> -logpdf(GeneralizedGamma(exp(v[1]),scl,exp(v[2])),y)), v)
     H = ForwardDiff.hessian(x -> sum(y-> -logpdf(GeneralizedGamma(exp(v[1]),scl,exp(v[2])),y)), v)
-    v -= H \ g
+    v -= lr*(H \ g)
     b = mean(x -> x^exp(v[2]), y)^exp(-v[2])
     return GeneralizedGamma(exp(v[1]), b, exp(v[2]))
 end
 
-function Mstep(d::Gamma, y)
+function Mstep(d::Gamma, y, lr=1)
     shp, scl = params(d)
     rho = log(shp)
     meanlogy = mean(log,y)
     #f(x,shp) = -shp*log(scl) + (shp-1)*log(x) - (x/scl) -loggamma(shp)
     g = shp*log(scl) - shp*meanlogy + digamma(shp)*shp
     H = shp*log(scl) - shp*meanlogy + trigamma(shp)*shp^2 + digamma(shp)*shp
-    rho -= g/H
+    rho -= lr*(g/H)
     b = mean(y)/exp(rho)
     return Gamma(exp(rho), b)
 end
 
-function Mstep(d::Weibull, y)
+function Mstep(d::Weibull, y, lr=1)
     shp, scl = params(d)
     rho = log(shp)
     logy = sum(log, y)
@@ -36,7 +36,7 @@ function Mstep(d::Weibull, y)
     #f(x,shp) = log(shp)-shp*log(scl) + (shp-1)*log(x) - (x/scl)^shp
     g = n*(shp*log(scl)-1) - shp*logy + shp*A
     H = n*(shp*log(scl)-1) - shp*logy + shp*A + (shp^2)*B
-    rho -= g/H
+    rho -= lr*(g/H)
     b = mean(x -> x^exp(rho), y)^exp(-rho)
     return Weibull(exp(rho), b)
 end
@@ -73,12 +73,12 @@ end
 
 #######
 #interval censored
-function MCEMic(rng, dist, iter, EL, ER, S)
+function MCEMic(rng, dist, iter, EL, ER, S, lr=1)
     lp = zeros(iter)
     pars = params(dist)
     for it in 1:iter
     ytilde = [rand(rng, truncated(dist,S[i]-ER[i],S[i]-EL[i])) for i in eachindex(S)]
-    dist = Mstep(dist, ytilde)
+    dist = Mstep(dist, ytilde, lr)
     lp[it] = mean(x-> -logpdf(dist,x), ytilde)
     end
     return dist,lp
@@ -106,12 +106,12 @@ function Estep_icrt(rng, dist, EL, ER, S, Tmax)
     return [ys ; yb] 
 end
 
-function MCEMicrt(rng, dist, iter, EL, ER, S, Tmax)
+function MCEMicrt(rng, dist, iter, EL, ER, S, Tmax, lr=1)
     lp = zeros(iter)
     pars = params(dist)
     for it in 1:iter
     ytilde = Estep_icrt(rng, dist, EL, ER, S, Tmax)
-    dist = Mstep(dist, ytilde)
+    dist = Mstep(dist, ytilde, lr)
     lp[it] = mean(x-> -logpdf(dist,x), ytilde)
     end
     return dist,lp
@@ -130,12 +130,12 @@ function Estep_dic(rng, dist, EL, ER, SL, SR)
     return ys
 end
 
-function MCEMdic(rng, dist, iter, EL, ER, SL, SR)
+function MCEMdic(rng, dist, iter, EL, ER, SL, SR, lr=1)
     lp = zeros(iter)
     pars = params(dist)
     for it in 1:iter
     ytilde = Estep_dic(rng, dist, EL, ER, SL, SR)
-    dist = Mstep(dist, ytilde)
+    dist = Mstep(dist, ytilde, lr)
     lp[it] = mean(x-> -logpdf(dist, x), ytilde)
     end
     return dist,lp 

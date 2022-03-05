@@ -52,8 +52,23 @@ function calclp_dic2(d, EL, ER, SL, SR)
     return -ll
 end
 
+function Estep_dic(rng, dist, EL, ER, SL, SR)
+    N = length(EL)
+    ys = zeros(N)
+    for i in 1:N
+        u = rand(rng)
+        E = EL[i] + (ER[i]-EL[i])*u
+        ys[i] = rand(rng, truncated(dist, SL[i]-E, SR[i]-E))
+    end
+    return ys
+end
+
 rng = MersenneTwister()
 dat = make_dic(rng, Weibull(1.5,6), 100)
+d = Weibull(2.5,6)
+ys = IntervalCensored.Estep_dic(rng,d,dat[2],dat[1],dat[3],dat[4])
+d = Mstep(d, ys)
+
 fit = MCEMdic(rng, Weibull(1.5,6), 10, dat[1], dat[2], dat[3], dat[4])
 
 @time simout_dic = sim_dic(Gamma(1.5,5), Gamma(1,5), 100, 100, 1234)
