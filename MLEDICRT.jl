@@ -44,7 +44,7 @@ function calclp_dic2(d, EL, ER, SL, SR)
         elseif SL[i] <= ER[i] < SR[i]
             ll += logmu + logsubexp(log(eqcdf(d,SR[i]-ER[i])),log(eqcdf(d,SR[i]-EL[i])-eqcdf(d,SL[i]-EL[i])))
              log(ER[i] - EL[i]) - log(SR[i] - SL[i])
-        elseif SL[i] < SR[i] <= ER[i]
+        elseif SR[i] <= ER[i]
             ll += logmu + logsubexp(log(eqcdf(d,SR[i]-EL[i])),log(eqcdf(d,SL[i]-EL[i]))) - 
               log(ER[i] - EL[i]) - log(SR[i] - SL[i])
         end
@@ -52,26 +52,28 @@ function calclp_dic2(d, EL, ER, SL, SR)
     return -ll
 end
 
-function Estep_dic(rng, dist, EL, ER, SL, SR)
-    N = length(EL)
-    ys = zeros(N)
-    for i in 1:N
-        u = rand(rng)
-        E = EL[i] + (ER[i]-EL[i])*u
-        ys[i] = rand(rng, truncated(dist, SL[i]-E, SR[i]-E))
-    end
-    return ys
-end
-
 rng = MersenneTwister()
 dat = make_dic(rng, Weibull(1.5,6), 100)
 d = Weibull(2.5,6)
-ys = IntervalCensored.Estep_dic(rng,d,dat[2],dat[1],dat[3],dat[4])
-d = Mstep(d, ys)
+ys = IntervalCensored.Estep_dic(rng,d,dat[1],dat[2],dat[3],dat[4])
+d = IntervalCensored.Mstep(d, ys)
+
+shp, scl = params(d)
+rho = log(shp)
+logy = sum(log, ys)
+n = length(ys)
+findall(.!isfinite.(log.(ys)))
+dat[1][61], dat[2][61], dat[3][61], dat[4][61]
+A = ((ys/scl).^shp)'*(log.(ys) .- log(scl))
+B = ((ys/scl).^shp)'*(log.(ys/scl).^2)
+#f(x,shp) = log(shp)-shp*log(scl) + (shp-1)*log(x) - (x/scl)^shp
+g = n*(shp*log(scl)-1) - shp*logy + shp*A
+H = n*(shp*log(scl)-1) - shp*logy + shp*A + (shp^2)*B
+rho -= lr*(g/H)
 
 fit = MCEMdic(rng, Weibull(1.5,6), 10, dat[1], dat[2], dat[3], dat[4])
 
-@time simout_dic = sim_dic(Gamma(1.5,5), Gamma(1,5), 100, 100, 1234)
+@time simout_dic = sim_dic(Weibull(1.5,5), Weibull(2, 6), 100, 100, 1234)
 ms = [mean(simout_dic[1]-simout_dic[3]), mean(simout_dic[2]-simout_dic[3])]
 ss = [std(simout_dic[1]-simout_dic[3]), std(simout_dic[2]-simout_dic[3])]
 df = stack(DataFrame(AIC1=simout_dic[1]-simout_dic[3], AIC2=simout_dic[2]-simout_dic[3]))
