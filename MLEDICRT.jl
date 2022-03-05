@@ -52,7 +52,11 @@ function calclp_dic2(d, EL, ER, SL, SR)
     return -ll
 end
 
-@time simout_dic = sim_dic(Weibull(1.5,5), Weibull(2.0,5), 100, 100, 1234)
+rng = MersenneTwister()
+dat = make_dic(rng, Weibull(1.5,6), 100)
+fit = MCEMdic(rng, Weibull(1.5,6), 10, dat[1], dat[2], dat[3], dat[4])
+
+@time simout_dic = sim_dic(Gamma(1.5,5), Gamma(1,5), 100, 100, 1234)
 ms = [mean(simout_dic[1]-simout_dic[3]), mean(simout_dic[2]-simout_dic[3])]
 ss = [std(simout_dic[1]-simout_dic[3]), std(simout_dic[2]-simout_dic[3])]
 df = stack(DataFrame(AIC1=simout_dic[1]-simout_dic[3], AIC2=simout_dic[2]-simout_dic[3]))

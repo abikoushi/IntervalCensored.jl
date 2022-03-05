@@ -23,7 +23,7 @@ export calclp_ic, calclp_icrt, calclp_dic,
  make_ic, make_icrt, make_dic, make_dicrt,
  SurvIC, SurvICRT, SurvDIC, SurvDICRT,
  eqcdf, cdf, ccdf, pdf, logpdf, mean, shape, scale, params, rand,
- MCEMic, MCEMicrt, MCEMdic,
+ MCEMic, MCEMicrt, MCEMdic, Mstep,
  GeneralizedGamma, LogLogistic
 
 end
