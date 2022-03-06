@@ -9,8 +9,8 @@ function calclp_dic(d, EL, ER, SL, SR)
             if ER[i] < SL[i]
                 ll += logmu + logsubexp(log(eqcdf(d,SR[i]-ER[i])-eqcdf(d,SL[i]-ER[i])),log(eqcdf(d,SR[i]-EL[i])-eqcdf(d,SL[i]-EL[i]))) -
                  log(ER[i] - EL[i]) - log(SR[i] - SL[i])
-            elseif SL[i] <= ER[i] < SR[i]
-                ll += logmu + logsubexp(log(eqcdf(d,SR[i]-ER[i])),log(eqcdf(d,SR[i]-EL[i])-eqcdf(d,SL[i]-EL[i])))
+            elseif ER[i] < SR[i]
+                ll += logmu + logsubexp(log(eqcdf(d,SR[i]-ER[i])),log(eqcdf(d,SR[i]-EL[i])-eqcdf(d,SL[i]-EL[i]))) - 
                  log(ER[i] - EL[i]) - log(SR[i] - SL[i])
             elseif SR[i] <= ER[i]
                 ll += logmu + logsubexp(log(eqcdf(d,SR[i]-EL[i])),log(eqcdf(d,SL[i]-EL[i]))) - 
@@ -19,7 +19,7 @@ function calclp_dic(d, EL, ER, SL, SR)
         else
             if ER[i] < SL[i]
                 ll += log(eqcdf(d,SR[i]-ER[i])-eqcdf(d,SL[i]-ER[i])) - log(SR[i] - SL[i])
-            elseif SL[i] <= ER[i] < SR[i]
+            elseif ER[i] < SR[i]
                 ll += log(eqcdf(d,SR[i]-ER[i])) - log(SR[i] - SL[i])
             end
         end
