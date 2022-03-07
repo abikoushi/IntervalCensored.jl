@@ -33,8 +33,8 @@ function sim_dic(td, md, N, iter, seed)
     end
     return aic1, aic2, ge, theta
 end
-exp(-0.7)
-@time simout_dic = sim_dic(Weibull(1.5,7), Weibull(2, 7), 5000, 100, 1234)
+
+@time simout_dic = sim_dic(Weibull(1.5,7), Weibull(2, 7), 100, 100, 1234)
 ms = [mean(simout_dic[1]-simout_dic[3]), mean(simout_dic[2]-simout_dic[3])]
 ss = [std(simout_dic[1]-simout_dic[3]), std(simout_dic[2]-simout_dic[3])]
 df = stack(DataFrame(AIC1=simout_dic[1]-simout_dic[3], AIC2=simout_dic[2]-simout_dic[3]))
