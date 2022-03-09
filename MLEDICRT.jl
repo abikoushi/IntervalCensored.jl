@@ -16,6 +16,33 @@ using StatsFuns
 #]add "https://github.com/abikoushi/IntervalCensored.jl"
 using IntervalCensored
 
+function calclp_dic2(d, EL, ER, SL, SR)
+    n = length(EL)
+    ll = zero(EL[1])
+    logmu = log(mean(d))
+    for i in eachindex(EL)
+        if isfinite(EL[i])
+            if ER[i] < SL[i]
+                ll += logmu+log(eqcdf(d,SR[i]-ER[i])-eqcdf(d,SL[i]-ER[i])-(eqcdf(d,SR[i]-EL[i])-eqcdf(d,SL[i]-EL[i]))) -
+                 log(ER[i] - EL[i]) - log(SR[i] - SL[i])
+            elseif ER[i] < SR[i]
+                ll += logmu+log(eqcdf(d,SR[i]-ER[i])-(eqcdf(d,SR[i]-EL[i])-eqcdf(d,SL[i]-EL[i]))) - 
+                 log(ER[i] - EL[i]) - log(SR[i] - SL[i])
+            elseif SR[i] <= ER[i]
+                ll += logmu+log(-eqcdf(d,SR[i]-EL[i]) + eqcdf(d,SL[i]-EL[i])) - 
+                  log(ER[i] - EL[i]) - log(SR[i] - SL[i])
+            end
+        else
+            if ER[i] < SL[i]
+                ll += log(eqcdf(d,SR[i]-ER[i])-eqcdf(d,SL[i]-ER[i])) - log(SR[i] - SL[i])
+            elseif ER[i] < SR[i]
+                ll += log(eqcdf(d,SR[i]-ER[i])) - log(SR[i] - SL[i])
+            end
+        end
+    end
+    return -ll
+end
+
 function sim_dic(td, md, N, iter, seed)
     rng = MersenneTwister()
     aic1 = zeros(iter)
@@ -27,7 +54,7 @@ function sim_dic(td, md, N, iter, seed)
         dat = make_dic(rng, td, N)
         fit = MCEMdic(rng, md, 10, dat[1], dat[2], dat[3], dat[4])
         ge[i] = quadgk(x -> -logpdf(fit[1],x)*pdf(td,x), 0, Inf)[1]
-        aic1[i] = (calclp_dic(fit[1], dat[1], dat[2], dat[3], dat[4]) + K)/N
+        aic1[i] = (calclp_dic2(fit[1], dat[1], dat[2], dat[3], dat[4]) + K)/N
         aic2[i] = fit[2][end]+K/N
         theta[i,:] .= params(fit[1])
     end

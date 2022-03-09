@@ -1,19 +1,16 @@
 function calclp_dic(d, EL, ER, SL, SR)
-    n = length(EL)
-    ll = 0
     logmu = logmean(d)
     ll = zero(EL[1])
-    logmu = log(mean(d))
     for i in eachindex(EL)
         if isfinite(EL[i])
             if ER[i] < SL[i]
-                ll += logmu + logsubexp(log(eqcdf(d,SR[i]-ER[i])-eqcdf(d,SL[i]-ER[i])),log(eqcdf(d,SR[i]-EL[i])-eqcdf(d,SL[i]-EL[i]))) -
+                ll += logmu+log(eqcdf(d,SR[i]-ER[i])-eqcdf(d,SL[i]-ER[i])-(eqcdf(d,SR[i]-EL[i])-eqcdf(d,SL[i]-EL[i]))) -
                  log(ER[i] - EL[i]) - log(SR[i] - SL[i])
             elseif ER[i] < SR[i]
-                ll += logmu + logsubexp(log(eqcdf(d,SR[i]-ER[i])),log(eqcdf(d,SR[i]-EL[i])-eqcdf(d,SL[i]-EL[i]))) - 
-                 log(ER[i] - EL[i]) - log(SR[i] - ER[i])
+                ll += logmu+log(eqcdf(d,SR[i]-ER[i])-(eqcdf(d,SR[i]-EL[i])-eqcdf(d,SL[i]-EL[i]))) - 
+                 log(ER[i] - EL[i]) - log(SR[i] - SL[i])
             elseif SR[i] <= ER[i]
-                ll += logmu + logsubexp(log(eqcdf(d,SR[i]-EL[i])),log(eqcdf(d,SL[i]-EL[i]))) - 
+                ll += logmu+log(-eqcdf(d,SR[i]-EL[i]) + eqcdf(d,SL[i]-EL[i])) - 
                   log(ER[i] - EL[i]) - log(SR[i] - SL[i])
             end
         else
