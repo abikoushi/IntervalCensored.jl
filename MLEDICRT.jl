@@ -29,7 +29,7 @@ function calclp_dic2(d, EL, ER, SL, SR)
                 ll += logmu+log(eqcdf(d,SR[i]-ER[i])-(eqcdf(d,SR[i]-EL[i])-eqcdf(d,SL[i]-EL[i]))) - 
                  log(ER[i] - EL[i]) - log(SR[i] - SL[i])
             elseif SR[i] <= ER[i]
-                ll += logmu+log(-eqcdf(d,SR[i]-EL[i]) + eqcdf(d,SL[i]-EL[i])) - 
+                ll += logmu+log(eqcdf(d,SR[i]-EL[i]) - eqcdf(d,SL[i]-EL[i])) - 
                   log(ER[i] - EL[i]) - log(SR[i] - SL[i])
             end
         else
@@ -54,13 +54,20 @@ function sim_dic(td, md, N, iter, seed)
         dat = make_dic(rng, td, N)
         fit = MCEMdic(rng, md, 10, dat[1], dat[2], dat[3], dat[4])
         ge[i] = quadgk(x -> -logpdf(fit[1],x)*pdf(td,x), 0, Inf)[1]
-        aic1[i] = (calclp_dic2(fit[1], dat[1], dat[2], dat[3], dat[4]) + K)/N
+        aic1[i] = (calclp_dic(fit[1], dat[1], dat[2], dat[3], dat[4]) + K)/N
         aic2[i] = fit[2][end]+K/N
         theta[i,:] .= params(fit[1])
     end
     return aic1, aic2, ge, theta
 end
 
+plot(x->eqcdf(Weibull(1.5,7), x),0,9, legend=false)
+
+rng = MersenneTwister()
+EL, ER, SL, SR = make_dic(rng, Weibull(1.5,7), 100)
+k = findfirst(SR .<= ER)
+eqcdf(Weibull(1.5,7),SR[k]-EL[k])
+eqcdf(Weibull(1.5,7),SL[k]-EL[k])
 @time simout_dic = sim_dic(Weibull(1.5,7), Weibull(2, 7), 100, 100, 1234)
 ms = [mean(simout_dic[1]-simout_dic[3]), mean(simout_dic[2]-simout_dic[3])]
 ss = [std(simout_dic[1]-simout_dic[3]), std(simout_dic[2]-simout_dic[3])]

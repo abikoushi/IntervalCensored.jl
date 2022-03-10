@@ -10,7 +10,7 @@ function calclp_dic(d, EL, ER, SL, SR)
                 ll += logmu+log(eqcdf(d,SR[i]-ER[i])-(eqcdf(d,SR[i]-EL[i])-eqcdf(d,SL[i]-EL[i]))) - 
                  log(ER[i] - EL[i]) - log(SR[i] - SL[i])
             elseif SR[i] <= ER[i]
-                ll += logmu+log(-eqcdf(d,SR[i]-EL[i]) + eqcdf(d,SL[i]-EL[i])) - 
+                ll += logmu+log(eqcdf(d,SR[i]-EL[i]) - eqcdf(d,SL[i]-EL[i])) - 
                   log(ER[i] - EL[i]) - log(SR[i] - SL[i])
             end
         else
