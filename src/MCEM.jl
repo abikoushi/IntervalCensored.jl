@@ -119,16 +119,28 @@ end
 
 ######
 #doubly interval censored
+# function Estep_dic(rng, dist, EL, ER, SL, SR)
+#     N = length(EL)
+#     ys = zeros(N)
+#     for i in 1:N
+#         u = rand(rng)
+#         E = EL[i] + (ER[i]-EL[i])*u
+#         ys[i] = rand(rng, truncated(dist, SL[i]-E, SR[i]-E))
+#     end
+#     return ys
+# end
+
 function Estep_dic(rng, dist, EL, ER, SL, SR)
     N = length(EL)
     ys = zeros(N)
     for i in 1:N
         u = rand(rng)
-        E = EL[i] + (ER[i]-EL[i])*u
-        ys[i] = rand(rng, truncated(dist, SL[i]-E, SR[i]-E))
+        S = SL[i] + (SR[i]-SL[i])*u
+        ys[i] = rand(rng, truncated(dist, S-EL[i], S-ER[i]))
     end
     return ys
 end
+
 
 function MCEMdic(rng, dist, iter, EL, ER, SL, SR, lr=1)
     lp = zeros(iter)
