@@ -136,7 +136,7 @@ function Estep_dic(rng, dist, EL, ER, SL, SR)
     for i in 1:N
         u = rand(rng)
         S = SL[i] + (SR[i]-SL[i])*u
-        ys[i] = rand(rng, truncated(dist, S-EL[i], S-ER[i]))
+        ys[i] = rand(rng, truncated(dist, S-ER[i], S-EL[i]))
     end
     return ys
 end
