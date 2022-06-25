@@ -19,7 +19,7 @@ include("./survdist/GeneralizedGamma.jl")
 include("./survdist/LogLogistic.jl")
 include("MCEM.jl")
 
-export calclp_ic, calclp_icrt, calclp_dic, 
+export calclp_ic, calclp_icrt, calclp_dic, calclp_dicrt, 
  make_ic, make_icrt, make_dic, make_dicrt,
  SurvIC, SurvICRT, SurvDIC, SurvDICRT,
  eqcdf, cdf, ccdf, pdf, logpdf, mean, shape, scale, params, rand,

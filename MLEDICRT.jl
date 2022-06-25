@@ -12,7 +12,7 @@ using DataFrames
 #using SpecialFunctions
 #using LinearAlgebra
 #using ProgressMeter
-]add "./projects/IntervalCensored"
+#]add "./projects/IntervalCensored"
 #]add "https://github.com/abikoushi/IntervalCensored.jl"
 using IntervalCensored
 
@@ -31,17 +31,70 @@ end
 
 function calclp_dic2(d, EL, ER, SL, SR)
     ll = zero(EL[1])
-    logmu = log(mean(d))
+    mu = mean(d)
     for i in eachindex(EL)
+        ll -= log(ER[i] - EL[i]) + log(SR[i] - SL[i])
         if ER[i] < SL[i]
-            ll += logmu+log(eqcdf(d,SR[i]-ER[i])-eqcdf(d,SL[i]-ER[i])-(eqcdf(d,SR[i]-EL[i])-eqcdf(d,SL[i]-EL[i]))) - log(ER[i] - EL[i]) - log(SR[i] - SL[i])
-        elseif ER[i] < SR[i]
-            ll += logmu+log(1-eqcdf(d,SL[i]-ER[i])-(eqcdf(d,SR[i]-EL[i])-eqcdf(d,SL[i]-EL[i]))) - log(ER[i] - EL[i])- log(SR[i] - SL[i])
+            ll += log(mu)
+            ll += log(eqcdf(d,SR[i]-ER[i]) - eqcdf(d,SL[i]-ER[i]) - (eqcdf(d,SR[i]-EL[i]) - eqcdf(d,SL[i]-EL[i])))
+        elseif SL[i] < ER[i] < SR[i]
+            ll += log((ER[i]-SL[i]) + mu*(eqcdf(d,SR[i]-ER[i]) - (eqcdf(d,SR[i]-EL[i]) - eqcdf(d,SL[i]-EL[i]))))
         elseif SR[i] <= ER[i]
-            ll += logmu+log(eqcdf(d,SR[i]-EL[i]) - eqcdf(d,SL[i]-EL[i]))- log(ER[i] - EL[i])- log(SR[i] - SL[i])
+            ll += log( (SR[i] - SL[i]) - mu*(eqcdf(d,SR[i]-EL[i]) - eqcdf(d,SL[i]-EL[i])) )
         end
     end
     return -ll
+end
+
+function simentropy(td, n, iter)
+    rng = MersenneTwister()
+    lp1 = zeros(iter)
+    lp2 = zeros(iter)
+    for i in 1:iter
+        dat = make_dic(rng, td, n)
+        lp1[i] = calclp_dic_s(rng, td, dat[1], dat[2], dat[3], dat[4])/n
+        lp2[i] = calclp_dic2(td, dat[1], dat[2], dat[3], dat[4])/n
+    end
+    return lp1, lp2
+end
+
+lp1, lp2 = simentropy(Weibull(2.0,7.0),50,10000)
+
+ms = [mean(lp1), mean(lp2)]
+ss = [std(lp1), std(lp2)]
+df = stack(DataFrame(Hs=lp1, Hm=lp2))
+@df df violin(:variable, :value, fill="white", legend=false, tick_direction=:out, xtickfontsize=12, trim=false)
+scatter!(["Hs","Hm"], ms[1:2], yerror = ss[1:2], color="black", ms=6)
+Plots.abline!(0, entropy(Weibull(2.0,7.0)), ls=:dash, color="black")
+mean(lp1)-entropy(Weibull(1.5,7))
+mean(lp2)-entropy(Weibull(1.5,7))
+histogram(lp2,legend=false, color = "lightgrey")
+vline!([entropy(Weibull(1.5,7))], linewidth=3, color = "royalblue")
+vline!([mean(lp2)], linewidth=3, color = "tomato")
+
+d = Weibull(2.0, 2.0)
+EL, ER, SL, SR = 1.0, 1.5, 2.0, 3.0
+quadgk(s -> ccdf(d,s-ER)-ccdf(d,s-EL), SL, SR)
+mean(d)*(eqcdf(d,SR-ER) - eqcdf(d,SL-ER) - (eqcdf(d,SR-EL) - eqcdf(d,SL-EL)))
+
+EL, SL, ER, SR = 0.25, 1.7, 2.0, 3.0
+p1, _ = quadgk(s -> ccdf(d,s-ER)-ccdf(d,s-EL), SL, SR)
+p1
+mean(d)*(eqcdf(d,SR-ER) - (eqcdf(d,SR-EL) - eqcdf(d,SL-EL))) + ER-SL
+
+EL, SL, SR, ER = 0.25, 1.7, 2.0, 2.0
+p1, _ = quadgk(s -> ccdf(d,s-ER)-ccdf(d,s-EL), SL, SR)
+p1
+(SR - SL)  - mean(d)*(eqcdf(d,SR-EL) - eqcdf(d,SL-EL)) 
+
+function calclp_dic3(d, EL, ER, SL, SR)
+    ll = zero(EL[1])
+    for i in eachindex(EL)
+        ll -= log(ER[i] - EL[i]) + log(SR[i] - SL[i])
+        prob, _ = quadgk(s -> ccdf(d,s-ER[i])-ccdf(d,s-EL[i]), SL[i], SR[i])
+        ll += log(prob)
+    end
+    return ll
 end
 
 function calclp_ic_s(rng, d, EL, ER, S)
@@ -57,17 +110,7 @@ function calclp_ic_s(rng, d, EL, ER, S)
 end
 
 
-function simentropy(td, n, iter)
-    rng = MersenneTwister()
-    lp1 = zeros(iter)
-    lp2 = zeros(iter)
-    for i in 1:iter
-        dat = make_dic(rng, td, n)
-        lp1[i] = calclp_dic_s(rng, td, dat[1], dat[2], dat[3], dat[4])/n
-        lp2[i] = calclp_dic2(td, dat[1], dat[2], dat[3], dat[4])/n
-    end
-    return lp1, lp2
-end
+
 
 function simentropy_ic(td, n, iter)
     rng = MersenneTwister()
@@ -81,17 +124,15 @@ function simentropy_ic(td, n, iter)
     return lp1, lp2
 end
 
-lp1, lp2 = simentropy_ic(Weibull(1.5,7), 100, 1000)
-ms = [mean(lp1), mean(lp2)]
-ss = [std(lp1), std(lp2)]
-df = stack(DataFrame(H1=lp1, H2=lp2))
-@df df violin(:variable, :value, fill="white", legend=false, tick_direction=:out, xtickfontsize=12, trim=false)
-scatter!(["H1","H2"], ms[1:2], yerror = ss[1:2], color="black", ms=6)
-Plots.abline!(0, entropy(Weibull(1.5, 7)), ls=:dash, color="black")
-mean(lp1)-entropy(Weibull(2,7))
-histogram(lp1,legend=false, color = "lightgrey")
-vline!([entropy(Weibull(2,7))], linewidth=3, color = "royalblue")
-vline!([mean(lp1)], linewidth=3, color = "tomato")
+dist0 = Weibull(1.5,5)
+n = 100
+rng = MersenneTwister()
+dat = make_dic(rng, dist0, n)
+calclp_dic3(dist0, dat[1], dat[2], dat[3], dat[4])/n
+calclp_dic2(dist0, dat[1], dat[2], dat[3], dat[4])/n
+
+
+lp1, lp2 = simentropy(dist0, 1000, 10000)
 
 function sim_dic(td, md, N, iter, seed)
     rng = MersenneTwister()
@@ -103,22 +144,26 @@ function sim_dic(td, md, N, iter, seed)
     for i in 1:iter
         dat = make_dic(rng, td, N)
         fit = MCEMdic(rng, md, 10, dat[1], dat[2], dat[3], dat[4])
-        ge[i] = quadgk(x -> -logpdf(fit[1],x)*pdf(td,x), 0, Inf)[1]
-        aic1[i] = (calclp_dic(rng, fit[1], dat[1], dat[2], dat[3], dat[4]) + K)/N
-        aic2[i] = fit[2][end]+K/N
+        ge[i] = N*quadgk(x -> -logpdf(fit[1],x)*pdf(td,x), 0, Inf)[1]
+        aic1[i] = (calclp_dic2(fit[1], dat[1], dat[2], dat[3], dat[4]) + K)
+        aic2[i] = N*fit[2][end]+K
         theta[i,:] .= params(fit[1])
     end
     return aic1, aic2, ge, theta
 end
 
-@time simout_dic = sim_dic(Weibull(0.8,7), Weibull(1,7), 100, 1000, 1234)
+@time simout_dic = sim_dic(Weibull(1.5,7), Weibull(2,7), 100, 1000, 1234)
 ms = [mean(simout_dic[1]-simout_dic[3]), mean(simout_dic[2]-simout_dic[3])]
 ss = [std(simout_dic[1]-simout_dic[3]), std(simout_dic[2]-simout_dic[3])]
-df = stack(DataFrame(AIC1=simout_dic[1]-simout_dic[3], AIC2=simout_dic[2]-simout_dic[3]))
+df = stack(DataFrame(AICm=simout_dic[1]-simout_dic[3], AICs=simout_dic[2]-simout_dic[3]))
 @df df violin(:variable, :value, fill="white", legend=false, tick_direction=:out, xtickfontsize=12, trim=false)
-scatter!(["AIC1","AIC2"], ms[1:2], yerror = ss[1:2], color="black", ms=6)
+scatter!(["AICm","AICs"], ms[1:2], yerror = ss[1:2], color="black", ms=6)
 Plots.abline!(0, 0, ls=:dash, color="black")
-
+mean(simout_dic[4], dims=1)
+histogram(simout_dic[1]-simout_dic[3],legend=false, color = "lightgrey", tick_direction=:out)
+vline!([0], linewidth=3, color = "royalblue")
+vline!([mean(simout_dic[1]-simout_dic[3])], linewidth=3, color = "tomato")
+#png("./Desktop/miss.png")
 
 function sim_ic(td, md, N, iter, seed)
     rng = MersenneTwister(seed)
@@ -148,9 +193,9 @@ function sim_ic(td, md, N, p, iter, seed)
     for i in 1:iter
         dat = make_ic(rng, td, N, p)
         fit = MCEMic(rng, md, 100, dat[1], dat[2], dat[3])
-        ge[i] = quadgk(x -> -logpdf(fit[1],x)*pdf(td, x), 0, Inf)[1]
-        aic1[i] = (calclp_ic(fit[1], dat[1], dat[2], dat[3]) + K)/N
-        aic2[i] = fit[2][end]+K/N
+        ge[i] = N*quadgk(x -> -logpdf(fit[1],x)*pdf(td, x), 0, Inf)[1]
+        aic1[i] = (calclp_ic(fit[1], dat[1], dat[2], dat[3]) + K)
+        aic2[i] = fit[2][end]+K
         theta[i,:] .= params(fit[1])
     end
     return aic1, aic2, ge, theta

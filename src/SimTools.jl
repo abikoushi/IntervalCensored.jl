@@ -140,7 +140,7 @@ function make_dic(rng::AbstractRNG, dt::ContinuousUnivariateDistribution, N::Int
     return EL, ER, SL, SR
 end
 
-#right truncated
+#right truncated (finite)
 function make_dicrt(rng::AbstractRNG, dt::ContinuousUnivariateDistribution, N::Int, Tmax)
     EL = zeros(N)
     ER = zeros(N)

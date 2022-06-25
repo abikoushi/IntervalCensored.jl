@@ -79,7 +79,7 @@ function MCEMic(rng, dist, iter, EL, ER, S, lr=1)
     for it in 1:iter
     ytilde = [rand(rng, truncated(dist,S[i]-ER[i],S[i]-EL[i])) for i in eachindex(S)]
     dist = Mstep(dist, ytilde, lr)
-    lp[it] = mean(x-> -logpdf(dist,x), ytilde)
+    lp[it] = sum(x-> -logpdf(dist,x), ytilde)
     end
     return dist,lp
 end
@@ -112,7 +112,7 @@ function MCEMicrt(rng, dist, iter, EL, ER, S, Tmax, lr=1)
     for it in 1:iter
     ytilde = Estep_icrt(rng, dist, EL, ER, S, Tmax)
     dist = Mstep(dist, ytilde, lr)
-    lp[it] = mean(x-> -logpdf(dist,x), ytilde)
+    lp[it] = sum(x-> -logpdf(dist,x), ytilde)
     end
     return dist,lp
 end
@@ -148,7 +148,7 @@ function MCEMdic(rng, dist, iter, EL, ER, SL, SR, lr=1)
     for it in 1:iter
     ytilde = Estep_dic(rng, dist, EL, ER, SL, SR)
     dist = Mstep(dist, ytilde, lr)
-    lp[it] = mean(x-> -logpdf(dist, x), ytilde)
+    lp[it] = sum(x-> -logpdf(dist, x), ytilde)
     end
     return dist,lp 
 end

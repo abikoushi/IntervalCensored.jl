@@ -23,10 +23,10 @@ External links
 
 """
 
-struct GeneralizedGamma <: ContinuousUnivariateDistribution
-    a
-    b
-    k
+struct GeneralizedGamma(Ta, Tb, Tk) <: ContinuousUnivariateDistribution
+    a::Ta
+    b::Tb
+    k::Tk
 end
 
 #### Parameters

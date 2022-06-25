@@ -117,7 +117,7 @@ function  logmean(d::Exponential)
 end
 
 function logeqpdf(d::UnivariateDistribution,x)
-    log(ccdf2(d,x))-logmean(d)
+    log(ccdf(d,x))-logmean(d)
 end
 
 function eqpdf(d::UnivariateDistribution,x)
