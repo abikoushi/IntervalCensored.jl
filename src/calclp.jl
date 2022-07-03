@@ -1,77 +1,68 @@
-function calclp_dic(d, EL, ER, SL, SR)
-    ll = zero(EL[1])
+#doubly interval censored
+function calclp(d::UnivariateDistribution, x::DIC)
+    ll = zero(x.EL)
     mu = mean(d)
-    for i in eachindex(EL)
-        if isfinite(EL[i])
-            ll -= log(ER[i] - EL[i]) + log(SR[i] - SL[i])
-            if ER[i] < SL[i]
-                ll += log(mu)
-                ll += log(eqcdf(d,SR[i]-ER[i]) - eqcdf(d,SL[i]-ER[i]) - (eqcdf(d,SR[i]-EL[i]) - eqcdf(d,SL[i]-EL[i])))
-            elseif ER[i] < SR[i]
-                ll += log((ER[i]-SL[i]) + mu*(eqcdf(d,SR[i]-ER[i]) - (eqcdf(d,SR[i]-EL[i]) - eqcdf(d,SL[i]-EL[i]))))
-            elseif SR[i] <= ER[i]
-                ll += log( (SR[i] - SL[i]) - mu*(eqcdf(d,SR[i]-EL[i]) - eqcdf(d,SL[i]-EL[i])) )
-            end
-        else #EL is missing
-            if ER[i] < SL[i]
-                ll += log(eqcdf(d,SR[i]-ER[i])-eqcdf(d,SL[i]-ER[i]))  - log(SR[i] - SL[i])
-            elseif ER[i] < SR[i]
-                ll += log(eqcdf(d,SR[i]-ER[i]))  - log(SR[i] - SL[i])
-            end
+    if isfinite(x.EL)
+        ll -= log(x.ER - x.EL) + log(x.SR - x.SL)
+        if x.ER < x.SL
+            ll += log(mu)
+            ll += log(eqcdf(d, x.SR-x.ER) - eqcdf(d, x.SL-x.ER) - (eqcdf(d, x.SR-x.EL) - eqcdf(d, x.SL-x.EL)))
+        elseif x.SL < x.ER < x.SR
+            ll += log((x.ER-x.SL) + mu*(eqcdf(d, x.SR-x.ER) - (eqcdf(d, x.SR-x.EL) - eqcdf(d, x.SL-x.EL))))
+        elseif x.SR <= x.ER
+            ll += log( (x.SR - x.SL) - mu*(eqcdf(d, x.SR-x.EL) - eqcdf(d, x.SL-x.EL)) )
+        end
+    else #EL is missing
+        if x.ER < x.SL
+            ll += log(eqcdf(d, x.SR-x.ER)-eqcdf(d, x.SL-x.ER))  - log(x.SR - x.SL)
+        elseif x.ER <= x.SR
+            ll += log(eqcdf(d, x.SR-x.ER))  - log(x.SR - x.SL)
         end
     end
     return -ll
 end
 
-function calclp_dicrt(d, EL, ER, SL, SR, Tmax)
-    ll = zero(EL[1])
+function calclp(d::UnivariateDistribution, x::DICRT)
+    ll = zero(x.EL)
     mu = mean(d)
-    for i in eachindex(EL)
-        if isfinite(EL[i])
-            ll -= log(ER[i] - EL[i]) + log(SR[i] - SL[i])
-            if ER[i] < SL[i]
-                ll += log(mu)
-                ll += log(eqcdf(d,SR[i]-ER[i]) - eqcdf(d,SL[i]-ER[i]) - (eqcdf(d,SR[i]-EL[i]) - eqcdf(d,SL[i]-EL[i])))
-            elseif ER[i] < SR[i]
-                ll += log((ER[i]-SL[i]) + mu*(eqcdf(d,SR[i]-ER[i]) - (eqcdf(d,SR[i]-EL[i]) - eqcdf(d,SL[i]-EL[i]))))
-            elseif SR[i] <= ER[i]
-                ll += log( (SR[i] - SL[i]) - mu*(eqcdf(d,SR[i]-EL[i]) - eqcdf(d,SL[i]-EL[i])) )
-            end
-        else #EL is missing
-            if ER[i] < SL[i]
-                ll += log(eqcdf(d,SR[i]-ER[i])-eqcdf(d,SL[i]-ER[i]))  - log(SR[i] - SL[i])
-            elseif ER[i] < SR[i]
-                ll += log(eqcdf(d,SR[i]-ER[i]))  - log(SR[i] - SL[i])
-            end
+    if isfinite(x.EL)
+        if x.ER < x.SL
+            ll += log(eqcdf(d, x.SR-x.ER) - eqcdf(d, x.SL-x.ER) - (eqcdf(d, x.SR-x.EL) - eqcdf(d, x.SL-x.EL))) - (log(eqcdf(d,x.TR-x.ER)-eqcdf(d,x.TR-x.EL)))
+        elseif x.SL < x.ER < x.SR
+            ll += log((x.ER-x.SL) + mu*(eqcdf(d, x.SR-x.ER) - (eqcdf(d, x.SR-x.EL) - eqcdf(d, x.SL-x.EL)))) - (log(mu) + log(eqcdf(d,x.TR-x.ER)-eqcdf(d,x.TR-x.EL)))
+        elseif x.SR <= x.ER
+            ll += log( (x.SR - x.SL) - mu*(eqcdf(d, x.SR-x.EL) - eqcdf(d, x.SL-x.EL)) ) - (log(mu) + log(eqcdf(d,x.TR-x.ER)-eqcdf(d,x.TR-x.EL)))
         end
-        ll += logcdf(d, Tmax-SR[i])
+    else #EL is missing
+        if x.ER < x.SL
+            ll += log(eqcdf(d, x.SR-x.ER)-eqcdf(d, x.SL-x.ER)) - (logmu+log(eqcdf(d,x.TR-x.ER))) #- log(x.SR - x.SL)
+        elseif x.ER <= x.SR
+            ll += log(eqcdf(d, x.SR-x.ER)) - (logmu+log(eqcdf(d,x.TR-x.ER))) 
+        end
     end
     return -ll
 end
 
-#######
 #interval censored
-function calclp_ic(d, EL, ER, S)
-    ll = zero(EL[1])
+function calclp(d::UnivariateDistribution, x::IC)
+    ll = zero(x.EL)
     mu = mean(d)
-    for i in eachindex(EL)
-        if isfinite(EL[i])
-            ll += logdiffcdf(d, S[i]-EL[i], S[i]-ER[i]) - log(ER[i] - EL[i])
-        else
-            ll += logccdf(d, S[i]-ER[i]) - logmean(d)
-        end
+    if isfinite(x.EL)
+        ll += logdiffcdf(d, x.S-x.EL, x.S-x.ER) - log(x.ER - x.EL)
+    else
+        ll += logccdf(d, x.S-x.ER) - logmean(d)
     end
     return -ll
 end
 
-function calclp_icrt(d, EL, ER, S, Tmax)
-    ll = zero(EL[1])
-    for i in eachindex(EL)
-        if isfinite(EL[i])
-            ll += logdiffcdf(d, S[i]-EL[i], S[i]-ER[i]) - (logmean(d)+log(eqcdf(d,Tmax-ER[i])-eqcdf(d,Tmax-EL[i])))
-        else
-            ll += logccdf(d,S[i]-ER[i]) - log(eqcdf(d,Tmax-ER[i]))
-        end
+function calclp(d::UnivariateDistribution, x::ICRT)
+    ll = zero(x.EL)
+    logmu = logmean(d)
+    if isfinite(x.EL)
+        ll += logdiffcdf(d, x.S-x.EL, x.S-x.ER) - (logmu+log(eqcdf(d,x.TR-x.ER)-eqcdf(d,x.TR-x.EL))) #- log(x.ER - x.EL)
+    else
+        ll += logccdf(d, x.S-x.ER) - logmu - log(eqcdf(d,x.TR-x.ER))
     end
     return -ll
 end
+

@@ -1,99 +1,90 @@
 #####
 #inteval censored
 #####
-function make_ic(rng::AbstractRNG, dt::UnivariateDistribution, N::Int)
-    ER = zeros(N)
-    EL = zeros(N)
-    S = zeros(N)
+function makeIC(rng::AbstractRNG, dt::UnivariateDistribution, N::Int)
     at = 0.0
+    X = []
     for i in 1:N
         ue = rand(rng)
         at -= log(rand(rng))
         tau = -log(rand(rng))
         y = rand(rng, dt)
-        S[i] = at + y
+        S = at + y
         ud = rand(rng)
-        EL[i] = max(0.0, at - tau * (1.0-ue))
-        ER[i] = min(S[i], at + tau * ue)
+        EL = max(0.0, at - tau * (1.0 - ue))
+        ER = min(S[i], at + tau * ue)
+        push!(X, IC(EL,ER,S))
     end
-    return EL, ER, S
+    return X
 end
 
 #inteval censored (infinite)
-function make_ic(rng::AbstractRNG, dt::UnivariateDistribution, N::Int, p)
-    ER = zeros(N)
-    EL = zeros(N)
-    S = zeros(N)
+function makeIC(rng::AbstractRNG, dt::UnivariateDistribution, N::Int, p)
     at = 0.0
+    X = []
     for i in 1:N
         ue = rand(rng)
         at -= log(rand(rng))
         tau = -log(rand(rng))
         y = rand(rng,dt)
-        S[i] = at + y
+        S = at + y
         ud = rand(rng)
+        EL = -Inf
         if ud <= p
-            EL[i] = max(0.0, at - tau * (1.0-ue))
-        else 
-            EL[i] = -Inf
+            EL = max(0.0, at - tau * (1.0 - ue))
         end
-        ER[i] = min(S[i], at + tau * ue)
+        ER = min(S, at + tau * ue)
+        push!(X, IC(EL,ER,S))
     end
-    return EL, ER, S
+    return X
 end
 
 #inteval censored with right truncated
-function make_icrt(rng::AbstractRNG, dt::ContinuousUnivariateDistribution, N::Int, Tmax)
-    L = zeros(N)
-    R = zeros(N)
-    S = zeros(N)
-    d = trues(N)
+function makeICRT(rng::AbstractRNG, dt::ContinuousUnivariateDistribution, N::Int, Tmax)
+    X = []
     for i in 1:N
         ue = rand(rng)
         y = rand(rng,dt)
         at = rand(rng) * Tmax
         tau = -log(rand(rng))
         y = rand(rng,dt)
-        S[i] = at + y
-        L[i] = max(0.0, at - tau * (1.0-ue))
-        R[i] = min(S[i], at + tau * ue)
-        d[i] = (S[i] <= Tmax)
-        d[i] = (S[i] <= Tmax)
+        S = at + y
+        EL = max(0.0, at - tau * (1.0 - ue))
+        ER = min(S, at + tau * ue)
+        if S <= Tmax
+            push!(X, ICRT(EL, ER, S, Tmax))
+        end
     end
-    return L[d], R[d], S[d]
+    return X
 end
 
 #inteval censored (infinite) with right truncated
-function make_icrt(rng::AbstractRNG, dt::ContinuousUnivariateDistribution, N::Int, Tmax, p)
-    L = zeros(N)
-    R = zeros(N)
-    S = zeros(N)
-    d = trues(N)
+function makeICRT(rng::AbstractRNG, dt::ContinuousUnivariateDistribution, N::Int, Tmax, p)
+    X = []
     for i in 1:N
         ue = rand(rng)
         y = rand(rng,dt)
         at = rand(rng) * Tmax
+        S = at + y
         tau = -log(rand(rng))
         ud = rand(rng)
+        EL = - Inf
         if ud <= p
-            L[i] = max(0.0, at - tau * (1.0-ue))
-        else 
-            L[i] = -Inf
+            EL = max(0.0, at - tau * (1.0 - ue))
         end
-        R[i] = min(S[i], at + tau * ue)
-        d[i] = (S[i] <= Tmax)
+        ER = min(S, at + tau * ue)
+        if S <= Tmax
+            push!(X, ICRT(EL, ER, S, Tmax))
+        end
     end
-    return L[d], R[d], S[d]
+    return X
 end
 
 #####
 #doubly inteval censored
 #####
-function make_dic(rng::AbstractRNG, dt::ContinuousUnivariateDistribution, N::Int)
-    EL = zeros(N)
-    ER = zeros(N)
-    SL = zeros(N)
-    SR = zeros(N)
+function makeDIC(rng::AbstractRNG, dt::ContinuousUnivariateDistribution, N::Int)
+    X=[]
     at = 0.0
     for i in 1:N
         ue = rand(rng)
@@ -104,20 +95,18 @@ function make_dic(rng::AbstractRNG, dt::ContinuousUnivariateDistribution, N::Int
         us = rand(rng)
         tau_e = -log(rand(rng))
         tau_s = -log(rand(rng))
-        EL[i] = max(0.0, at - tau_e * (1.0 - ue))
-        SR[i] = S + tau_s * us
-        SL[i] = max(EL[i], S - tau_s * (1.0 - us))
-        ER[i] = min(SR[i], at + tau_e * ue)
+        EL = max(0.0, at - tau_e * (1.0 - ue))
+        SR = S + tau_s * us
+        SL = max(EL, S - tau_s * (1.0 - us))
+        ER = min(SR, at + tau_e * ue)
+        push!(X, DIC(EL, ER, SL, SR))
     end
-    return EL, ER, SL, SR
+    return X
 end
 
 #infinite
-function make_dic(rng::AbstractRNG, dt::ContinuousUnivariateDistribution, N::Int, p)
-    EL = zeros(N)
-    ER = zeros(N)
-    SL = zeros(N)
-    SR = zeros(N)
+function makeDIC(rng::AbstractRNG, dt::ContinuousUnivariateDistribution, N::Int, p)
+    X=[]
     at = 0.0
     for i in 1:N
         at -= log(rand(rng))
@@ -127,26 +116,22 @@ function make_dic(rng::AbstractRNG, dt::ContinuousUnivariateDistribution, N::Int
         tau_s = -log(rand(rng))
         ue = rand(rng)
         ud = rand(rng)
+        EL = -Inf
         if ud <= p
-            EL[i] = max(0.0, at - tau_e * (1.0 - ue))
-        else
-            EL[i] = -Inf
+            EL = max(0.0, at - tau_e * (1.0 - ue))
         end
         us = rand(rng)
-        SR[i] = S + tau_s * us
-        SL[i] = max(EL[i], S - tau_s * (1.0 - us))
-        ER[i] = min(SR[i], at + tau_e * ue)
+        SR = S + tau_s * us
+        SL = max(EL, S - tau_s * (1.0 - us))
+        ER = min(SR, at + tau_e * ue)
+        push!(X, DIC(EL, ER, SL, SR))
     end
-    return EL, ER, SL, SR
+    return X
 end
 
 #right truncated (finite)
-function make_dicrt(rng::AbstractRNG, dt::ContinuousUnivariateDistribution, N::Int, Tmax)
-    EL = zeros(N)
-    ER = zeros(N)
-    SL = zeros(N)
-    SR = zeros(N)
-    d = trues(N)
+function makeDICRT(rng::AbstractRNG, dt::ContinuousUnivariateDistribution, N::Int, Tmax)
+    X=[]
     for i in 1:N
         ue = rand(rng)
         y = rand(rng,dt)
@@ -156,27 +141,24 @@ function make_dicrt(rng::AbstractRNG, dt::ContinuousUnivariateDistribution, N::I
         tau_s = -log(rand(rng))
         ue = rand(rng)
         ud = rand(rng)
+        EL = -Inf
         if ud <= p
-            EL[i] = max(0.0, at - tau_e * (1d - ue))
-        else
-            EL[i] = -Inf
+            EL = max(0.0, at - tau_e * (1.0 - ue))
         end
         us = rand(rng)
-        SR[i] = S + tau_s * us
-        SL[i] = max(EL[i], S - tau_s * (1 - us))
-        ER[i] = min(SR[i], at + tau_e * ue)
-        d[i] = SR <= Tmax
+        SR = S + tau_s * us
+        SL = max(EL, S - tau_s * (1.0 - us))
+        ER = min(SR, at + tau_e * ue)
+        if SR <= Tmax
+            push!(X, DICRT(EL, ER, SL, SR, Tmax))
+        end
     end
-    return EL[d], ER[d], SL[d], SR[d]
+    return X
 end
 
 #doubly inteval censored (infinite) with right truncated
-function make_dicrt(rng::AbstractRNG, dt::ContinuousUnivariateDistribution, N::Int, Tmax, p)
-    EL = zeros(N)
-    ER = zeros(N)
-    SL = zeros(N)
-    SR = zeros(N)
-    d = trues(N)
+function makeDICRT(rng::AbstractRNG, dt::ContinuousUnivariateDistribution, N::Int, Tmax, p)
+    X=[]
     for i in 1:N
         ue = rand(rng)
         y = rand(rng,dt)
@@ -186,16 +168,17 @@ function make_dicrt(rng::AbstractRNG, dt::ContinuousUnivariateDistribution, N::I
         tau_s = -log(rand(rng))
         ue = rand(rng)
         ud = rand(rng)
+        EL = -Inf
         if ud <= p
-            EL[i] = max(0.0, at - tau_e * (1.0 - ue))
-        else
-            EL[i] = -Inf
+            EL = max(0.0, at - tau_e * (1.0 - ue))
         end
         us = rand(rng)
-        SR[i] = S + tau_s * us
-        SL[i] = max(EL[i], S - tau_s * (1.0 - us))
-        ER[i] = min(SR[i], at + tau_e * ue)
-        d[i] = SR <= Tmax
+        SR = S + tau_s * us
+        SL = max(EL, S - tau_s * (1.0 - us))
+        ER = min(SR, at + tau_e * ue)
+        if SR <= Tmax
+            push!(X, DICRT(EL, ER, SL, SR, Tmax))
+        end
     end
-    return EL[d], ER[d], SL[d], SR[d]
+    return X
 end

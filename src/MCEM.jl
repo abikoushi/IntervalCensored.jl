@@ -4,7 +4,7 @@ function Mstep(d::LogNormal, y)
     return LogNormal(mu, sigma)
 end
 
-function Mstep(d::GeneralizedGamma, y, lr=1)
+function Mstep(d::GeneralizedGamma, y)
     shp, scl, pwr = params(d)
     v = [log(shp), log(pwr)]
     g = ForwardDiff.gradient(v -> sum(y-> -logpdf(GeneralizedGamma(exp(v[1]),scl,exp(v[2])),y)), v)
@@ -14,7 +14,7 @@ function Mstep(d::GeneralizedGamma, y, lr=1)
     return GeneralizedGamma(exp(v[1]), b, exp(v[2]))
 end
 
-function Mstep(d::Gamma, y, lr=1)
+function Mstep(d::Gamma, y)
     shp, scl = params(d)
     rho = log(shp)
     meanlogy = mean(log,y)
@@ -26,7 +26,7 @@ function Mstep(d::Gamma, y, lr=1)
     return Gamma(exp(rho), b)
 end
 
-function Mstep(d::Weibull, y, lr=1)
+function Mstep(d::Weibull, y)
     shp, scl = params(d)
     rho = log(shp)
     logy = sum(log, y)
@@ -72,6 +72,65 @@ function Mstep(d::Exponential, y)
 end
 
 #######
+
+function Estep(rng::AbstractRNG, dist::UnivariateDistribution, x::IC)
+    ytilde = rand(rng, truncated(dist, x.S-x.ER, x.S-x.EL))
+    return ytilde
+end
+
+function Estep(rng::AbstractRNG, dist::UnivariateDistribution, x::ICRT)
+    ys = rand(rng, truncated(dist, x.S-x.ER, x.S-x.EL))
+    u = rand(rng)
+    E = x.EL + (x.ER-x.EL)*u
+    q = cdf(dist, x.TR - E)
+    yb = []
+    if zero(q) < q < one(q)
+        B = rand(rng, Geometric(q))
+        if B > 0
+            push!(yb,[rand(rng, truncated(dist,Tmax-E,Inf)) for i in UnitRange(1,B)])
+        end
+    end
+    return [ys ; yb]
+end
+
+function Estep(rng::AbstractRNG, dist::UnivariateDistribution, x::DIC)
+    u = rand(rng)
+    S = x.SL + (x.SR[i]-x.SL)*u
+    ytilde = rand(rng, truncated(dist, S-x.ER, S-x.EL))
+    return ytilde
+end
+
+function Estep(rng::AbstractRNG, dist::UnivariateDistribution, x::DICRT)
+    u = rand(rng)
+    S = x.SL + (x.SR[i]-x.SL)*u
+    rand!(rng, u)
+    E = x.EL + (x.ER-x.EL)*u
+    q = cdf(dist, x.TR - E)
+    yb = []
+    if zero(q) < q < one(q)
+        B = rand(rng, Geometric(q))
+        if B > 0
+            push!(yb,[rand(rng, truncated(dist,Tmax-E,Inf)) for i in UnitRange(1,B)])
+        end
+    end
+    ytilde = rand(rng, truncated(dist, S-x.ER, S-x.EL))
+    return ytilde
+end
+
+
+function MCEM(rng::AbstractRNG, dist::UnivariateDistribution, x, iter)
+    lp = zeros(iter)
+    pars = params(dist)
+    for it in UnitRange(1,iter)
+    ytilde = reduce(vcat, [Estep(rng, dist, x[i]) for i in eachindex(x)])
+    dist = Mstep(dist, ytilde)
+    lp[it] = sum(x-> -logpdf(dist, x), ytilde)
+    end
+    return dist,lp 
+end
+
+####
+
 #interval censored
 function MCEMic(rng, dist, iter, EL, ER, S, lr=1)
     lp = zeros(iter)
@@ -84,7 +143,6 @@ function MCEMic(rng, dist, iter, EL, ER, S, lr=1)
     return dist,lp
 end
 
-########
 #interval censored with right truncated
 function Estep_icrt(rng, dist, EL, ER, S, Tmax)
     N = length(S)

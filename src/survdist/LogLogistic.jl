@@ -40,7 +40,7 @@ params(d::LogLogistic) = (d.a, d.b)
 
 function mean(d::LogLogistic)
     a, b = params(d)
-    if a>1
+    if a>one(a)
         return (b*pi/a)/sin(pi/a)
     else
         return missing
