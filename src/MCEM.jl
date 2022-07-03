@@ -9,7 +9,7 @@ function Mstep(d::GeneralizedGamma, y)
     v = [log(shp), log(pwr)]
     g = ForwardDiff.gradient(v -> sum(y-> -logpdf(GeneralizedGamma(exp(v[1]),scl,exp(v[2])),y)), v)
     H = ForwardDiff.hessian(x -> sum(y-> -logpdf(GeneralizedGamma(exp(v[1]),scl,exp(v[2])),y)), v)
-    v -= lr*(H \ g)
+    v -= (H \ g)
     b = mean(x -> x^exp(v[2]), y)^exp(-v[2])
     return GeneralizedGamma(exp(v[1]), b, exp(v[2]))
 end
@@ -21,7 +21,7 @@ function Mstep(d::Gamma, y)
     #f(x,shp) = -shp*log(scl) + (shp-1)*log(x) - (x/scl) -loggamma(shp)
     g = shp*log(scl) - shp*meanlogy + digamma(shp)*shp
     H = shp*log(scl) - shp*meanlogy + trigamma(shp)*shp^2 + digamma(shp)*shp
-    rho -= lr*(g/H)
+    rho -= (g/H)
     b = mean(y)/exp(rho)
     return Gamma(exp(rho), b)
 end
@@ -36,7 +36,7 @@ function Mstep(d::Weibull, y)
     #f(x,shp) = log(shp)-shp*log(scl) + (shp-1)*log(x) - (x/scl)^shp
     g = n*(shp*log(scl)-1) - shp*logy + shp*A
     H = n*(shp*log(scl)-1) - shp*logy + shp*A + (shp^2)*B
-    rho -= lr*(g/H)
+    rho -= (g/H)
     b = mean(x -> x^exp(rho), y)^exp(-rho)
     return Weibull(exp(rho), b)
 end
