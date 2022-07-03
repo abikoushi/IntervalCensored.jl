@@ -95,14 +95,14 @@ end
 
 function Estep(rng::AbstractRNG, dist::UnivariateDistribution, x::DIC)
     u = rand(rng)
-    S = x.SL + (x.SR[i]-x.SL)*u
+    S = x.SL + (x.SR-x.SL)*u
     ytilde = rand(rng, truncated(dist, S-x.ER, S-x.EL))
     return ytilde
 end
 
 function Estep(rng::AbstractRNG, dist::UnivariateDistribution, x::DICRT)
     u = rand(rng)
-    S = x.SL + (x.SR[i]-x.SL)*u
+    S = x.SL + (x.SR-x.SL)*u
     rand!(rng, u)
     E = x.EL + (x.ER-x.EL)*u
     q = cdf(dist, x.TR - E)
