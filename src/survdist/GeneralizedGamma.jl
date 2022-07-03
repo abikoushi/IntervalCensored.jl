@@ -23,7 +23,7 @@ External links
 
 """
 
-struct GeneralizedGamma(Ta, Tb, Tk) <: ContinuousUnivariateDistribution
+struct GeneralizedGamma{Ta, Tb, Tk} <: ContinuousUnivariateDistribution
     a::Ta
     b::Tb
     k::Tk

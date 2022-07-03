@@ -12,20 +12,20 @@ import Distributions: ccdf, cdf, logpdf, pdf, quantile, mean, rand, params, shap
 
 abstract type interval end
 
-struct IC(TEL, TER, TS) <: interval
+struct IC{TEL, TER, TS} <: interval
     EL::TEL
     ER::TER
     S::TS
 end
 
-struct ICRT(TEL, TER, TS, TTR) <: interval
+struct ICRT{TEL, TER, TS, TTR} <: interval
     EL::TEL
     ER::TER
     S::TS
     TR::TTR
 end
 
-struct ICT(TEL, TER, TS, TTL, TTR) <: interval
+struct ICT{TEL, TER, TS, TTL, TTR} <: interval
     EL::TEL
     ER::TER
     S::TS
@@ -33,14 +33,14 @@ struct ICT(TEL, TER, TS, TTL, TTR) <: interval
     TR::TTR
 end
 
-struct DIC(TEL, TER, TSL, TSR) <: interval
+struct DIC{TEL, TER, TSL, TSR} <: interval
     EL::TEL
     ER::TER
     SL::TSL
     SR::TSR
 end
 
-struct DICRT(TEL, TER, TSL, TSR, TTR) <: interval
+struct DICRT{TEL, TER, TSL, TSR, TTR} <: interval
     EL::TEL
     ER::TER
     SL::TSL
@@ -48,7 +48,7 @@ struct DICRT(TEL, TER, TSL, TSR, TTR) <: interval
     TR::TTR
 end
 
-struct DICT(TEL, TER, TSL, TSR, TTL, TTR) <: surv
+struct DICT{TEL, TER, TSL, TSR, TTL, TTR} <: interval
     EL::TEL
     ER::TER
     SL::TSL
