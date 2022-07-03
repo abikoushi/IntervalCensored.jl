@@ -53,7 +53,7 @@ struct DICT{TEL, TER, TSL, TSR, TTL, TTR} <: interval
     ER::TER
     SL::TSL
     SR::TSR
-    TL:TTL
+    TL::TTL
     TR::TTR
 end
 
