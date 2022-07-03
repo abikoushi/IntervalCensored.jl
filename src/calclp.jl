@@ -3,12 +3,12 @@ function calclp(d::UnivariateDistribution, x::DIC)
     ll = zero(x.EL)
     mu = mean(d)
     if isfinite(x.EL)
-        ll -= log(x.ER - x.EL) + log(x.SR - x.SL)
+        ll -= (log(x.ER - x.EL) + log(x.SR - x.SL))
         if x.ER < x.SL
             ll += log(mu)
             ll += log(eqcdf(d, x.SR-x.ER) - eqcdf(d, x.SL-x.ER) - (eqcdf(d, x.SR-x.EL) - eqcdf(d, x.SL-x.EL)))
         elseif x.SL < x.ER < x.SR
-            ll += log((x.ER-x.SL) + mu*(eqcdf(d, x.SR-x.ER) - (eqcdf(d, x.SR-x.EL) - eqcdf(d, x.SL-x.EL))))
+            ll += log((x.ER - x.SL) + mu*(eqcdf(d, x.SR-x.ER) - (eqcdf(d, x.SR-x.EL) - eqcdf(d, x.SL-x.EL))))
         elseif x.SR <= x.ER
             ll += log( (x.SR - x.SL) - mu*(eqcdf(d, x.SR-x.EL) - eqcdf(d, x.SL-x.EL)) )
         end
