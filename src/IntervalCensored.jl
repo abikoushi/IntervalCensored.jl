@@ -9,6 +9,7 @@ using StaticArrays
 using StatsFuns
 import LinearAlgebra: dot
 import Distributions: ccdf, cdf, logpdf, pdf, quantile, mean, rand, params, shape, scale
+import Distributions: @distr_support
 
 abstract type IntervalData end
 
