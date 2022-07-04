@@ -119,7 +119,7 @@ end
 
 ####
 
-function MCEM(rng::AbstractRNG, dist::ContinuousUnivariateDistribution, x::Vector{IntervalData}, iter::Int)
+function MCEM(rng::AbstractRNG, dist::ContinuousUnivariateDistribution, x::Vector{Any}, iter::Int)
     @assert support(dist) == RealInterval{AbstractFloat}(0.0, Inf)
     lp = zeros(iter)
     pars = params(dist)
