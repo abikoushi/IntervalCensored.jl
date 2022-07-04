@@ -46,11 +46,11 @@ end
 #interval censored
 function calclp(d::UnivariateDistribution, x::IC)
     ll = zero(x.EL)
-    mu = mean(d)
+    logmu = logmean(d)
     if isfinite(x.EL)
-        ll += logdiffcdf(d, x.S-x.EL, x.S-x.ER) - log(x.ER - x.EL)
+        ll += log(cdf(d, x.S-x.EL) - cdf(d, x.S-x.ER)) - log(x.ER - x.EL)
     else
-        ll += logccdf(d, x.S-x.ER) - logmean(d)
+        ll += log(ccdf(d, x.S-x.ER)) - logmu
     end
     return -ll
 end
@@ -59,9 +59,9 @@ function calclp(d::UnivariateDistribution, x::ICRT)
     ll = zero(x.EL)
     logmu = logmean(d)
     if isfinite(x.EL)
-        ll += logdiffcdf(d, x.S-x.EL, x.S-x.ER) - (logmu+log(eqcdf(d,x.TR-x.ER)-eqcdf(d,x.TR-x.EL))) #- log(x.ER - x.EL)
+        ll += log(cdf(d, x.S-x.EL) - cdf(d, x.S-x.ER)) - (logmu+log(eqcdf(d,x.TR-x.ER)-eqcdf(d,x.TR-x.EL))) #- log(x.ER - x.EL)
     else
-        ll += logccdf(d, x.S-x.ER) - logmu - log(eqcdf(d,x.TR-x.ER))
+        ll += log(ccdf(d, x.S-x.ER)) - logmu - log(eqcdf(d,x.TR-x.ER))
     end
     return -ll
 end
