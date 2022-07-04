@@ -27,6 +27,8 @@ struct LogLogistic{Ta, Tb} <: ContinuousUnivariateDistribution
     b::Tb
 end
 
+@distr_support Exponential 0.0 Inf
+
 #### Parameters
 
 shape(d::LogLogistic) = d.a

@@ -29,6 +29,8 @@ struct GeneralizedGamma{Ta, Tb, Tk} <: ContinuousUnivariateDistribution
     k::Tk
 end
 
+@distr_support Exponential 0.0 Inf
+
 #### Parameters
 params(d::GeneralizedGamma) = (d.a, d.b, d.k)
 shape(d::GeneralizedGamma) = d.a
