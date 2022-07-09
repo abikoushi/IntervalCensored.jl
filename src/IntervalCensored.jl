@@ -68,7 +68,7 @@ include("MCEM.jl")
 
 export calclp, IntervalData, IC, ICRT, DIC, DICRT
 export makeIC, makeICRT, makeDIC, makeDICRT
-export SurvIC, SurvICRT, SurvDIC, SurvDICRT
+export eccdfEM
 export eqcdf, cdf, ccdf, pdf, logpdf, mean, shape, scale, params, rand
 export MCEM
 export GeneralizedGamma, LogLogistic

@@ -59,6 +59,75 @@ function bcount(U,breaks,n,m)
     return bfirst, blast
 end
 
+function ES(x::DIC, midp)
+    S=midp*(x.SL+x.SR)
+    return S
+end
+
+function ES(x::DICRT, midp)
+    S=midp*(x.SL+x.SR)
+    return S
+end
+
+function ES(x::IC, midp)
+    return x.S
+end
+
+function ES(x::ICRT, midp)
+    return x.S
+end
+
+function truncpoint(x::ICRT)
+    return x.TR - x.S
+end
+
+function truncpoint(x::DICRT)
+    return x.TR - x.SR
+end
+
+function truncpoint(x::IC)
+    return Inf
+end
+
+function truncpoint(x::DIC)
+    return Inf
+end
+
+function eccdfEM(y, midp=0.5, iter=100, tol=1e-8)
+    n = length(y)
+    S0 = zeros(n)
+    L = zeros(n)
+    R = zeros(n)
+    TP = zeros(n)
+    for i in 1:n
+        L[i] = y[i].EL
+        R[i] = y[i].ER
+        S0[i] = ES(y[i], midp)
+        TP[i] = truncpoint(y[i])
+    end
+    tj = setbreaks([S-L;S-R])
+    m = length(tj)
+    aind = acount(S-ER, S-EL,tj,n,m)
+    p = inv(m)*ones(m)
+    bind = bcount(TP,tj,n,m)
+    dj = d_up(p,aind[1],aind[2],n,m)
+    p_up!(p, n, m, bind[1], bind[2],dj)
+    con = false
+    count = 0
+    p2 = p #こういうとこcopy!()とか使ったほうがいいですか？
+    for it in 1:iter
+        count += 1
+        dj = d_up(p,aind[1],aind[2],n,m)
+        p_up!(p, n, m, bind[1], bind[2], dj)
+        con = all(abs.(p2-p) .< tol)
+        p = p2
+    if con || any(isnan.(p))
+        break
+    end
+    end
+    return tj, 1.0 .- cumsum(p), con, count
+end
+
 function SurvIC(L, R, S, iter=100, tol=1e-8)
     tj = setbreaks([S-L;S-R])
     n = length(L)
@@ -109,8 +178,8 @@ function SurvICRT(L, R, S, Tmax, iter=100, tol=1e-10)
     return tj, 1.0 .- cumsum(p), con, count
 end
 
-function SurvDIC(EL, ER, SL, SR, iter=100, tol=1e-8)
-    S = 0.5*(SL+SR)
+function SurvDIC(EL, ER, SL, SR, midp = 0.5, iter = 100, tol = 1e-8)
+    S = midp * (SL+SR)
     tj = setbreaks([S-EL;S-ER])
     n = length(EL)
     m = length(tj)
@@ -134,8 +203,8 @@ function SurvDIC(EL, ER, SL, SR, iter=100, tol=1e-8)
     return tj, 1.0 .- cumsum(p), con, count
 end
 
-function SurvDICRT(EL, ER, SL, SR, Tmax, iter=100, tol=1e-8)
-    S = 0.5*(SL+SR)
+function SurvDICRT(EL, ER, SL, SR, Tmax, midp = 0.5, iter=100, tol=1e-8)
+    S =  midp *(SL+SR)
     tj = setbreaks([S-EL;S-ER])
     n = length(EL)
     m = length(tj)
