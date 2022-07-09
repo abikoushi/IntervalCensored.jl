@@ -107,7 +107,7 @@ function eccdfEM(y, midp=0.5, iter=100, tol=1e-8)
     end
     tj = setbreaks([S0-L;S0-R])
     m = length(tj)
-    aind = acount(S0-ER, S0-EL,tj,n,m)
+    aind = acount(S0-R, S0-L,tj,n,m)
     p = inv(m)*ones(m)
     bind = bcount(TP,tj,n,m)
     dj = d_up(p,aind[1],aind[2],n,m)
