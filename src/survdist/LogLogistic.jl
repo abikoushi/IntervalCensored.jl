@@ -82,9 +82,17 @@ end
 
 function ccdf(d::LogLogistic, x)
     a, b = params(d)
-    return one(x) - (x^a) / (b^a +x^a)
+    return (b^a) / (b^a +x^a)
 end
 
+function eqcdf(d::LogLogistic, x::Real)
+    out = zero(x)
+    if x >= zero(x)
+        a, b = params(d)
+        out = x*_₂F₁(1, 1/a, 1 + 1/a, -(x/b)^a)*sin(pi/a)/(b*pi/a)
+    end
+    return out
+end
 
 # logcdf(d::Logistic, x::Real) = -log1pexp(-zval(d, x))
 # logccdf(d::Logistic, x::Real) = -log1pexp(zval(d, x))

@@ -19,7 +19,7 @@ function calclp(d::UnivariateDistribution, x::DIC)
             ll += log(eqcdf(d, x.SR-x.ER))  - log(x.SR - x.SL)
         end
     end
-    return -ll
+    return ll
 end
 
 function calclp(d::UnivariateDistribution, x::DICRT)
@@ -40,7 +40,7 @@ function calclp(d::UnivariateDistribution, x::DICRT)
             ll += log(eqcdf(d, x.SR-x.ER)) - (logmu+log(eqcdf(d,x.TR-x.ER))) 
         end
     end
-    return -ll
+    return ll
 end
 
 #interval censored
@@ -52,7 +52,7 @@ function calclp(d::UnivariateDistribution, x::IC)
     else
         ll += log(ccdf(d, x.S-x.ER)) - logmu
     end
-    return -ll
+    return ll
 end
 
 function calclp(d::UnivariateDistribution, x::ICRT)
@@ -63,6 +63,6 @@ function calclp(d::UnivariateDistribution, x::ICRT)
     else
         ll += log(ccdf(d, x.S-x.ER)) - logmu - log(eqcdf(d,x.TR-x.ER))
     end
-    return -ll
+    return ll
 end
 

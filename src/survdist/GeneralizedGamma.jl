@@ -5,16 +5,17 @@ The *Generalized gamma distribution* with shape parameters `a`, scale `b`, and p
 function
 
 ```math
-f(x; a, b) = \\frac{(k/b^a) x^{a-1} e^{-(x/b)^k}{\\Gamma(a/k)},
+f(x; a, b, k) = \\frac{(k/b^a) x^{a-1} e^{-(x/b)^k}{\\Gamma(a/k)},
 \\quad x > 0
 ```
 
 ```julia
 GeneralizedGamma(a, b, k)      # GeneralizedGamma distribution with shape a, scale b, power k
 
-params(d)        # Get the parameters, i.e. (a, b, k)
-shape(d)         # Get the shape parameter, i.e. a
-scale(b)         # Get the scale parameter, i.e. b
+params(d) # Get the parameters, i.e. (a, b, k)
+shape(d)  # Get the shape parameter, i.e. a
+scale(d)  # Get the scale parameter, i.e. b
+power(d)  # Get the scale parameter, i.e. k
 ```
 
 External links
@@ -29,7 +30,7 @@ struct GeneralizedGamma{Ta, Tb, Tk} <: ContinuousUnivariateDistribution
     k::Tk
 end
 
-@distr_support Exponential 0.0 Inf
+@distr_support GeneralizedGamma 0.0 Inf
 
 #### Parameters
 params(d::GeneralizedGamma) = (d.a, d.b, d.k)
@@ -105,8 +106,8 @@ function eqcdf(d::GeneralizedGamma, x::Real)
     if x >= zero(x)
         shp, scl, pwr = params(d)
         out = (one(x) + x*gamma(shp/pwr)*gamma_ccdf(shp/pwr, (x/scl)^pwr)/(scl*gamma((shp+1)/pwr)) - gamma_ccdf((shp+1)/pwr, (x/scl)^pwr))
-        return out
     end
+    return out
 end
 
 function quantile(d::GeneralizedGamma, p)
@@ -124,6 +125,11 @@ end
 #### Statistics
 
 function mean(d::GeneralizedGamma)
+    shp, scl, pwr = params(d)
+    return scl*gamma((shp+1)/pwr)/gamma(shp/pwr)
+end
+
+function meanlog(d::GeneralizedGamma)
     shp, scl, pwr = params(d)
     return scl*gamma((shp+1)/pwr)/gamma(shp/pwr)
 end
