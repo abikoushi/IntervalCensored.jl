@@ -33,7 +33,7 @@ function p_up!(p,n,m,j1,j2,dj)
     copy!(p, num ./ sum(num))
 end
 
-function acount(L,R,breaks,n,m)
+function acount(L, R, breaks, n, m)
     afirst = zeros(Int,n)
     alast = zeros(Int,n)
     for i in 1:n
@@ -46,7 +46,7 @@ function acount(L,R,breaks,n,m)
     return afirst, alast
 end
 
-function bcount(U,breaks,n,m)
+function bcount(U, breaks, n, m)
     bfirst = zeros(Int,n)
     blast = zeros(Int,n)
     for i in 1:n
@@ -93,7 +93,7 @@ function truncpoint(x::DIC)
     return Inf
 end
 
-function eccdfEM(y, midp=0.5, iter=100, tol=1e-8)
+function eccdfEM(y, midp = 0.5, iter = 100, tol=1e-8)
     n = length(y)
     S0 = zeros(n)
     L = zeros(n)
@@ -114,19 +114,23 @@ function eccdfEM(y, midp=0.5, iter=100, tol=1e-8)
     p_up!(p, n, m, bind[1], bind[2],dj)
     con = false
     count = 0
-    p2 = p #こういうとこcopy!()とか使ったほうがいいですか？
+    p2 = copy(p)
     for it in 1:iter
         count += 1
-        dj = d_up(p,aind[1],aind[2],n,m)
+        dj = d_up(p, aind[1], aind[2], n, m)
         p_up!(p, n, m, bind[1], bind[2], dj)
         con = all(abs.(p2-p) .< tol)
-        p = p2
+        copy!(p, p2)
     if con || any(isnan.(p))
         break
     end
     end
-    return tj, 1.0 .- cumsum(p), con, count
+    return tj, 1 .- cumsum(p), con, count
 end
+
+########
+#following functions are deprecated
+#
 
 function SurvIC(L, R, S, iter=100, tol=1e-8)
     tj = setbreaks([S-L;S-R])
@@ -138,13 +142,13 @@ function SurvIC(L, R, S, iter=100, tol=1e-8)
     copy!(p, dj ./ sum(dj))
     con = false
     count = 0
-    p2 = p #こういうとこcopy!()とか使ったほうがいいですか？
+    p2 = copy(p) #こういうとこcopy!()とか使ったほうがいいですか？
     for it in 1:iter
         count += 1
         dj = d_up(p,aind[1],aind[2],n,m)
         copy!(p2, dj ./ sum(dj))
         con = all(abs.(p2-p) .< tol)
-        p = p2
+        copy!(p, p2)
     if con || any(isnan.(p))
         break
     end
