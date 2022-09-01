@@ -14,20 +14,20 @@ import Distributions: @distr_support
 abstract type IntervalData end
 
 struct IC{TEL, TER, TS} <: IntervalData
-    EL::TEL
+    EL::Union{TEL, Missing}
     ER::TER
     S::TS
 end
 
 struct ICRT{TEL, TER, TS, TTR} <: IntervalData
-    EL::TEL
+    EL::Union{TEL, Missing}
     ER::TER
     S::TS
     TR::TTR
 end
 
 struct ICT{TEL, TER, TS, TTL, TTR} <: IntervalData
-    EL::TEL
+    EL::Union{TEL, Missing}
     ER::TER
     S::TS
     TL::TTL
@@ -35,14 +35,14 @@ struct ICT{TEL, TER, TS, TTL, TTR} <: IntervalData
 end
 
 struct DIC{TEL, TER, TSL, TSR} <: IntervalData
-    EL::TEL
+    EL::Union{TEL, Missing}
     ER::TER
     SL::TSL
     SR::TSR
 end
 
 struct DICRT{TEL, TER, TSL, TSR, TTR} <: IntervalData
-    EL::TEL
+    EL::Union{TEL, Missing}
     ER::TER
     SL::TSL
     SR::TSR
@@ -50,13 +50,26 @@ struct DICRT{TEL, TER, TSL, TSR, TTR} <: IntervalData
 end
 
 struct DICT{TEL, TER, TSL, TSR, TTL, TTR} <: IntervalData
-    EL::TEL
+    EL::Union{TEL, Missing}
     ER::TER
     SL::TSL
     SR::TSR
     TL::TTL
     TR::TTR
 end
+
+function setDICdata(EL, ER, SL, SR)
+    out = Vector{IntervalData}(undef, length(EL))
+    for i in eachindex(EL)
+        if SL[i] == SR[i]
+            out[i] = IC(EL[i], ER[i], SL[i])
+        else
+            out[i] = DIC(EL[i], ER[i], SL[i], SR[i])
+        end
+    end
+    return out
+end
+
 
 include("NonParametric.jl")
 include("SimTools.jl")

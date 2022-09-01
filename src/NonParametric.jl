@@ -93,7 +93,7 @@ function truncpoint(x::DIC)
     return Inf
 end
 
-function eccdfEM(y, midp = 0.5, iter = 100, tol=1e-8)
+function eccdfEM(y, midp = 0.5, iter = 100, tol=1e-4)
     n = length(y)
     S0 = zeros(n)
     L = zeros(n)
