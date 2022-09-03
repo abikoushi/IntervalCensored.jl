@@ -46,6 +46,23 @@ function acount(L, R, breaks, n, m)
     return afirst, alast
 end
 
+function acount(x, breaks, m)
+    L = x.EL
+    R = x.ER
+    S = ES(x)
+    if ismissing(L)
+        alpha = breaks[2:m] .<= (S - R)
+        afirst = findfirst(alpha)
+        alast =  findlast(alpha)
+        return afirst, alast
+    else
+        alpha = (S - L) .<= breaks[1:(m-1)] .&& breaks[2:m] .<= (S - R)
+        afirst = findfirst(alpha)
+        alast =  findlast(alpha)
+        return afirst, alast
+    end
+end
+
 function bcount(U, breaks, n, m)
     bfirst = zeros(Int,n)
     blast = zeros(Int,n)
@@ -96,7 +113,7 @@ end
 function eccdfEM(y, midp = 0.5, iter = 100, tol=1e-4)
     n = length(y)
     S0 = zeros(n)
-    L = zeros(n)
+    L = Vector{Union{Float64, Missing}}(undef, n)
     R = zeros(n)
     TP = zeros(n)
     for i in 1:n
@@ -131,6 +148,38 @@ end
 ########
 #following functions are deprecated
 #
+
+function SurvICm(Y, iter=100, tol=1e-6)
+    n = size(Y, 1)
+    tj = setbreaks([Y.S[i]-Y.R[i] for i in eachindex(Y)])
+    m = length(tj)
+    aind1 = zeros(Int, n)
+    aind2 = zeros(Int, n)
+    for i in eachindex(R)
+        aind[1], aind[2] = acount(Y[i], tj, m)
+    end
+    p = inv(m)*ones(m)
+    q = cumsum(p)
+    Delta = diff(tj)
+    den = sum(Delta)
+    mu = (m-1) - sum(q[i]*Delta[i] for i in 1:(m-1))
+    dj = d_up(p, aind1, aind2, n, m)
+    copy!(p, dj*mu ./ (den*sum(dj)))
+    con = false
+    count = 0
+    p2 = copy(p)
+    for it in 1:iter
+        count += 1
+        dj = d_up(p, aind1, aind2, n, m)
+        copy!(p2, dj ./ sum(dj))
+        con = all(abs.(p2-p) .< tol)
+        copy!(p, p2)
+    if con || any(isnan.(p))
+        break
+    end
+    end
+    return tj, 1 .- cumsum(p), con, count
+end
 
 function SurvIC(L, R, S, iter=100, tol=1e-8)
     tj = setbreaks([S-L;S-R])
