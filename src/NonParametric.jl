@@ -50,7 +50,7 @@ function acount(x, breaks, m)
     L = x.EL
     R = x.ER
     S = ES(x)
-    if ismissing(L)
+    if isfinite(L)
         alpha = breaks[2:m] .<= (S - R)
         afirst = findfirst(alpha)
         alast =  findlast(alpha)
