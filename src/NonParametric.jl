@@ -151,7 +151,7 @@ end
 
 function SurvICm(Y, iter=100, tol=1e-6)
     n = size(Y, 1)
-    tj = setbreaks([Y[i].S-Y[i].R for i in eachindex(Y)])
+    tj = setbreaks([Y[i].S-Y[i].ER for i in eachindex(Y)])
     m = length(tj)
     aind1 = zeros(Int, n)
     aind2 = zeros(Int, n)
