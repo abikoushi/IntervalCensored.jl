@@ -46,23 +46,6 @@ function acount(L, R, breaks, n, m)
     return afirst, alast
 end
 
-function acount(x, breaks, m)
-    L = x.EL
-    R = x.ER
-    S = ES(x)
-    if isfinite(L)
-        alpha = breaks[2:m] .<= (S - R)
-        afirst = findfirst(alpha)
-        alast =  findlast(alpha)
-        return afirst, alast
-    else
-        alpha = (S - L) .<= breaks[1:(m-1)] .&& breaks[2:m] .<= (S - R)
-        afirst = findfirst(alpha)
-        alast =  findlast(alpha)
-        return afirst, alast
-    end
-end
-
 function bcount(U, breaks, n, m)
     bfirst = zeros(Int,n)
     blast = zeros(Int,n)
@@ -109,6 +92,24 @@ end
 function truncpoint(x::DIC)
     return Inf
 end
+
+function acount(x, breaks, m)
+    L = x.EL
+    R = x.ER
+    S = x.S
+    if isfinite(L)
+        alpha = breaks[2:m] .<= (S - R)
+        afirst = findfirst(alpha)
+        alast =  findlast(alpha)
+        return afirst, alast
+    else
+        alpha = (S - L) .<= breaks[1:(m-1)] .&& breaks[2:m] .<= (S - R)
+        afirst = findfirst(alpha)
+        alast =  findlast(alpha)
+        return afirst, alast
+    end
+end
+
 
 function eccdfEM(y, midp = 0.5, iter = 100, tol=1e-4)
     n = length(y)
