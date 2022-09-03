@@ -155,7 +155,7 @@ function SurvICm(Y, iter=100, tol=1e-6)
     m = length(tj)
     aind1 = zeros(Int, n)
     aind2 = zeros(Int, n)
-    for i in eachindex(R)
+    for i in axes(Y, 1)
         aind[1], aind[2] = acount(Y[i], tj, m)
     end
     p = inv(m)*ones(m)
