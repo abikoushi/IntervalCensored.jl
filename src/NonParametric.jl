@@ -1,4 +1,4 @@
-function d_up(p,j1,j2,n,m)
+function d_up(p, j1, j2, n, m)
     dj = zeros(m)
     for i in 1:n
         if j1[i]>0 && j2[i]>0
@@ -157,7 +157,7 @@ function SurvICm(Y, iter=100, tol=1e-6)
     aind1 = zeros(Int, n)
     aind2 = zeros(Int, n)
     for i in axes(Y, 1)
-        aind1, aind2 = acount(Y[i], tj, m)
+        aind1[i], aind2[i] = acount(Y[i], tj, m)
     end
     p = inv(m)*ones(m)
     q = cumsum(p)
