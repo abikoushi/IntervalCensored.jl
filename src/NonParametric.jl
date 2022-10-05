@@ -109,6 +109,10 @@ function truncpoint(x::DIC)
     return Inf
 end
 
+function truncpoint(x::NC)
+    return Inf
+end
+
 function acount(x, breaks, m)
     L = x.EL
     R = x.ER
