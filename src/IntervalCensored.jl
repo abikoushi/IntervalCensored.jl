@@ -13,6 +13,11 @@ import Distributions: @distr_support
 
 abstract type IntervalData end
 
+struct NC{TE, TS} <: IntervalData
+    E::TE
+    S::TS
+end
+
 struct IC{TEL, TER, TS} <: IntervalData
     EL::TEL
     ER::TER
@@ -67,7 +72,7 @@ include("./survdist/GeneralizedGamma.jl")
 include("./survdist/LogLogistic.jl")
 include("MCEM.jl")
 
-export calclp, IntervalData, IC, ICRT, DIC, DICRT
+export calclp, IntervalData, NC, IC, ICRT, DIC, DICRT
 export makeIC, makeICRT, makeDIC, makeDICRT
 export eccdfEM
 export eqcdf, cdf, ccdf, pdf, logpdf, mean, shape, scale, params, rand

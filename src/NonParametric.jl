@@ -19,15 +19,15 @@ function p_up!(p,n,m,j1,j2,dj)
     bj = zeros(m)
     for i in 1:n
         if j1[i]>0 && j2[i]>0
-        q = sum(p[j1[i]:j2[i]])
-        if q > 0.0
-        b = (1-q)/q
-        ind = setdiff(1:m,j1[i]:j2[i])
-        r = vec(p[ind])
-        r ./= sum(r)
-        bj[ind] += b*r
-    end
-    end
+            q = sum(p[j1[i]:j2[i]])
+            if q > 0.0
+                b = (1-q)/q
+                ind = setdiff(1:m, j1[i]:j2[i])
+                r = vec(p[ind])
+                r ./= sum(r)
+                bj[ind] += b*r
+            end
+        end
     end
     num = dj + bj
     copy!(p, num ./ sum(num))
@@ -57,6 +57,22 @@ function bcount(U, breaks, n, m)
         end
     end
     return bfirst, blast
+end
+
+function getE(x::NC)
+    return x.E, x.E
+end
+
+function getE(x::IC)
+    return x.EL, x.ER
+end
+
+function getE(x::DIC)
+    return x.EL, x.ER
+end
+
+function ES(x::NC, midp)
+    return x.S
 end
 
 function ES(x::DIC, midp)
@@ -118,8 +134,7 @@ function eccdfEM(y, midp = 0.5, iter = 100, tol=1e-4)
     R = zeros(n)
     TP = zeros(n)
     for i in 1:n
-        L[i] = y[i].EL
-        R[i] = y[i].ER
+        L[i], R[i] = getE(y[i])
         S0[i] = ES(y[i], midp)
         TP[i] = truncpoint(y[i])
     end
@@ -129,7 +144,7 @@ function eccdfEM(y, midp = 0.5, iter = 100, tol=1e-4)
     p = inv(m)*ones(m)
     bind = bcount(TP,tj,n,m)
     dj = d_up(p,aind[1],aind[2],n,m)
-    p_up!(p, n, m, bind[1], bind[2],dj)
+    p_up!(p, n, m, bind[1], bind[2], dj)
     con = false
     count = 0
     p2 = copy(p)
