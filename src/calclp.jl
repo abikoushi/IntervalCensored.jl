@@ -1,5 +1,5 @@
 #doubly interval censored
-function calclp(d::UnivariateDistribution, x::DIC)
+function evaluatelp(d::UnivariateDistribution, x::DIC)
     ll = zero(x.EL)
     mu = mean(d)
     if isfinite(x.EL)
@@ -22,7 +22,7 @@ function calclp(d::UnivariateDistribution, x::DIC)
     return ll
 end
 
-function calclp(d::UnivariateDistribution, x::DICRT)
+function evaluatelp(d::UnivariateDistribution, x::DICRT)
     ll = zero(x.EL)
     mu = mean(d)
     if isfinite(x.EL)
@@ -44,7 +44,7 @@ function calclp(d::UnivariateDistribution, x::DICRT)
 end
 
 #interval censored
-function calclp(d::UnivariateDistribution, x::IC)
+function evaluatelp(d::UnivariateDistribution, x::IC)
     ll = zero(x.EL)
     logmu = logmean(d)
     if isfinite(x.EL)
@@ -55,7 +55,7 @@ function calclp(d::UnivariateDistribution, x::IC)
     return ll
 end
 
-function calclp(d::UnivariateDistribution, x::ICRT)
+function evaluatelp(d::UnivariateDistribution, x::ICRT)
     ll = zero(x.EL)
     logmu = logmean(d)
     if isfinite(x.EL)
@@ -66,3 +66,6 @@ function calclp(d::UnivariateDistribution, x::ICRT)
     return ll
 end
 
+function evaluatelp(d::UnivariateDistribution, x::NC)
+    return logpdf(d, x.S-x.E)
+end
