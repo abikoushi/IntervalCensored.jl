@@ -121,7 +121,7 @@ function Aup(le_rank,re_rank,ls_rank,rs_rank,h)
     return A
 end
 
-function paramup!(A,h)
+function paramup(A)
     m = size(A,1)
     h = zeros(m)
     for e in 1:(m-1)
@@ -129,10 +129,11 @@ function paramup!(A,h)
         h[s-e] += A[e,s]
       end
     end
-    copy!(h, h/sum(h))
+   h /= sum(h)
+   return h
 end
 
-function paramup!(A,h,lam)
+function paramup(A)
     m = size(A,1)
     h = zeros(m)
     lam = zeros(m)
@@ -142,8 +143,9 @@ function paramup!(A,h,lam)
         h[s-e] += A[e,s]
       end
     end
-    copy!(h, h/sum(h))
-    copy!(lam, lam/sum(lam))
+    h /= sum(h)
+    lam /= sum(lam)
+    return h, lam
 end
 
 
@@ -175,7 +177,7 @@ function bup(le_rank,re_rank,h,lam)
     return b
   end
 
-  function paramup!(A,B,h,lam)
+  function paramup(A,B)
     m = size(A,1)
     h = zeros(m)
     lam = zeros(m)
@@ -186,8 +188,9 @@ function bup(le_rank,re_rank,h,lam)
         h[s-e] += B[e,s]
       end
     end
-    copy!(h, h/sum(h))
-    copy!(lam,lam/sum(lam))
+    h /= sum(h)
+    lam /= sum(lam)
+    return h, lam
   end
 
   function jointecdfEM(y,Tmax,iter)
@@ -216,7 +219,7 @@ function bup(le_rank,re_rank,h,lam)
     for i in 1:iter
       A = Aup(le_rank, re_rank, ls_rank, rs_rank, h, lam)
       B = Bup(le_rank, re_rank, h, lam)
-      paramup!(A,B,h,lam)
+      h, lam = paramup(A,B)
       logprob[i] = lp(A, B, h, lam)
     end
     return ti, h, lam, A, B, logprob
@@ -247,7 +250,7 @@ function bup(le_rank,re_rank,h,lam)
     logprob = zeros(iter)
     for i in 1:iter
       A = Aup(le_rank, re_rank, ls_rank, rs_rank, h, lam)
-      paramup!(A,h,lam)
+      h, lam = paramup(A)
       logprob[i] = lp(A, h, lam)
     end
     return ti, h, lam, A, logprob
@@ -278,7 +281,7 @@ function ecdfEM(y, iter, tol)
     logprob = zeros(iter)
     for i in 1:iter
       A = Aup(le_rank, re_rank, ls_rank, rs_rank, h)
-      paramup!(A,h)
+      h = paramup(A)
       logprob[i] = lp(A, h)
     end
     return ti, h, A, logprob
