@@ -44,7 +44,7 @@ end
 # end
 
 #interval censored
-function evaluatelp(d::UnivariateDistribution, x::IC)
+function evaluatelp(d::UnivariateDistribution, x::ICE)
     ll = zero(x.EL)
     logmu = logmean(d)
     if isfinite(x.EL)
