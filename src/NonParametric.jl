@@ -143,7 +143,7 @@ function paramup!(A,h,lam)
       end
     end
     copy!(h, h/sum(h))
-    copy!(lam,sum(lam))
+    copy!(lam, lam/sum(lam))
 end
 
 
@@ -187,7 +187,7 @@ function bup(le_rank,re_rank,h,lam)
       end
     end
     copy!(h, h/sum(h))
-    copy!(lam,sum(lam))
+    copy!(lam,lam/sum(lam))
   end
 
   function jointecdfEM(y,Tmax,iter)
@@ -248,9 +248,9 @@ function bup(le_rank,re_rank,h,lam)
     for i in 1:iter
       A = Aup(le_rank, re_rank, ls_rank, rs_rank, h, lam)
       paramup!(A,h,lam)
-      logprob[i] = lp(A, B, h, lam)
+      logprob[i] = lp(A, h, lam)
     end
-    return ti, h, lam, A, B, logprob
+    return ti, h, lam, A, logprob
   end
 
   
