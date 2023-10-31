@@ -1,69 +1,12 @@
-function d_up(p, j1, j2, n, m)
-    dj = zeros(m)
-    for i in 1:n
-        if j1[i]>0 && j2[i]>0
-            q = p[j1[i]:j2[i]]
-            q ./= sum(q)
-            dj[j1[i]:j2[i]] += q
-        end
-    end
-    return dj
-end
-
-function setbreaks(trow, o=0)
-    tj = sort(unique(max.(o, trow)))
-    return tj
-end
-
-function p_up!(p,n,m,j1,j2,dj)
-    bj = zeros(m)
-    for i in 1:n
-        if j1[i]>0 && j2[i]>0
-            q = sum(p[j1[i]:j2[i]])
-            if q > 0.0
-                b = (1-q)/q
-                ind = setdiff(1:m, j1[i]:j2[i])
-                r = vec(p[ind])
-                r ./= sum(r)
-                bj[ind] += b*r
-            end
-        end
-    end
-    num = dj + bj
-    copy!(p, num ./ sum(num))
-end
-
-function acount(L, R, breaks, n, m)
-    afirst = zeros(Int,n)
-    alast = zeros(Int,n)
-    for i in 1:n
-        alpha = L[i] .<= breaks[1:(m-1)] .&& breaks[2:m] .<= R[i]
-        if any(alpha)
-            afirst[i] = findfirst(alpha)
-            alast[i] =  findlast(alpha)
-        end
-    end
-    return afirst, alast
-end
-
-function bcount(U, breaks, n, m)
-    bfirst = zeros(Int,n)
-    blast = zeros(Int,n)
-    for i in 1:n
-        beta = breaks .<= U[i]
-        if any(beta)
-            bfirst[i] = findfirst(beta)
-            blast[i] =  findlast(beta)
-        end
-    end
-    return bfirst, blast
-end
-
 function getE(x::NC)
     return x.E, x.E
 end
 
-function getE(x::IC)
+function getE(x::ICS)
+    return x.E, x.E
+end
+
+function getE(x::ICE)
     return x.EL, x.ER
 end
 
@@ -71,233 +14,276 @@ function getE(x::DIC)
     return x.EL, x.ER
 end
 
-function ES(x::NC, midp)
-    return x.S
+function getS(x::NC)
+    return x.S, x.S
 end
 
-function ES(x::DIC, midp)
-    S=midp*(x.SL+x.SR)
-    return S
+function getE(x::ICS)
+    return x.SL, x.SR
 end
 
-function ES(x::DICRT, midp)
-    S=midp*(x.SL+x.SR)
-    return S
+function getS(x::ICE)
+    return x.S, x.S
 end
 
-function ES(x::IC, midp)
-    return x.S
+function getS(x::DIC)
+    return x.SL, x.SR
 end
 
-function ES(x::ICRT, midp)
-    return x.S
-end
-
-function truncpoint(x::ICRT)
-    return x.TR - x.S
-end
-
-function truncpoint(x::DICRT)
-    return x.TR - x.SR
-end
-
-function truncpoint(x::IC)
-    return Inf
-end
-
-function truncpoint(x::DIC)
-    return Inf
-end
-
-function truncpoint(x::NC)
-    return Inf
-end
-
-function acount(x, breaks, m)
-    L = x.EL
-    R = x.ER
-    S = x.S
-    if isfinite(L)
-        alpha = breaks[2:m] .<= (S - R)
-        afirst = findfirst(alpha)
-        alast =  findlast(alpha)
-        return afirst, alast
-    else
-        alpha = (S - L) .<= breaks[1:(m-1)] .&& breaks[2:m] .<= (S - R)
-        afirst = findfirst(alpha)
-        alast =  findlast(alpha)
-        return afirst, alast
+function lp(A, h, lam)
+    m = size(A,1)
+    lp = 0.
+    for e  in 1:(m-1)
+      for s in (e+1):m
+          lp += xlogy(A[e,s],h[s-e])
+          lp += xlogy(A[e,s],lam[e])
+      end
     end
+  return lp
+end
+
+function lp(A, B, h, lam)
+    lp = 0.
+    m = size(A,1)
+    for e in 1:m
+      for s in (e+1):m
+          lp += xlogy(A[e,s]+B[e,s],h[s-e])
+          lp += xlogy(A[e,s]+B[e,s],lam[e])
+      end
+    end
+    return lp
+end
+
+function Aup2(le_rank,re_rank,s_rank,h,lam)
+    m = size(lam,1)
+    A = UpperTriangular(zeros(m,m))
+    a = h[(s_rank - re_rank+1):(s_rank - le_rank+1)] .* lam[le_rank:re_rank]
+    A[le_rank:re_rank, s_rank] += a/sum(a)
+    return A
+end
+
+function Aup(le_rank,re_rank,s_rank,h,lam)
+    m = size(lam,1)
+    A = UpperTriangular(zeros(m,m))
+    for i in eachindex(s_rank)
+      A += Aup2(le_rank[i],re_rank[i],s_rank[i],h,lam)
+    end
+    return A
+  end
+
+#double
+function Aup3(le_rank,re_rank,ls_rank,rs_rank,h,lam)
+    m = size(lam,1)
+    A = UpperTriangular(zeros(m,m))
+    a = zeros(m,m)
+    for i in (le_rank):(re_rank)
+      for j in (ls_rank):(rs_rank)
+        if j>i
+          a[i,j] += h[j-i] * lam[i]
+        end
+      end
+    end
+    a /= sum(a)
+    return a
+end
+
+function Aup(le_rank,re_rank,ls_rank,rs_rank,h,lam)
+    m = size(lam,1)
+    A = UpperTriangular(zeros(m,m))
+    for i in eachindex(rs_rank)
+      A += Aup3(le_rank[i],re_rank[i],ls_rank[i],rs_rank[i],h,lam)
+    end
+    return A
+end
+
+#double
+function Aup3(le_rank,re_rank,ls_rank,rs_rank,h)
+    m = size(lam,1)
+    A = UpperTriangular(zeros(m,m))
+    a = zeros(m,m)
+    for i in (le_rank):(re_rank)
+      for j in (ls_rank):(rs_rank)
+        if j>i
+          a[i,j] += h[j-i]
+        end
+      end
+    end
+    a /= sum(a)
+    return a
+end
+
+function Aup(le_rank,re_rank,ls_rank,rs_rank,h)
+    m = size(lam,1)
+    A = UpperTriangular(zeros(m,m))
+    for i in eachindex(rs_rank)
+      A += Aup3(le_rank[i],re_rank[i],ls_rank[i],rs_rank[i],h)
+    end
+    return A
+end
+
+function paramup!(A,h)
+    m = size(A,1)
+    h = zeros(m)
+    for e in 1:(m-1)
+      for s in (e+1):m
+        h[s-e] += A[e,s]
+      end
+    end
+    copy!(h, h/sum(h))
+end
+
+function paramup!(A,h,lam)
+    m = size(A,1)
+    h = zeros(m)
+    lam = zeros(m)
+    for e in 1:(m-1)
+      lam[e] += sum(A[e,:])
+      for s in (e+1):m
+        h[s-e] += A[e,s]
+      end
+    end
+    copy!(h, h/sum(h))
+    copy!(lam,sum(lam))
 end
 
 
-function eccdfEM(y, midp = 0.5, iter = 100, tol=1e-4)
+function bup(le_rank,re_rank,h,lam)
+    m = size(lam,1)
+    B = UpperTriangular(zeros(m,m))
+    rho = zeros(2)
+    #convolution
+    for i in le_rank:re_rank
+      rho[1] += lam[i]*sum(h[1:(m-i)])
+      rho[2] += lam[i]*sum(h[(m-i+1):end])
+    end
+    rho /= sum(rho)
+    #expectation
+    for i in le_rank:re_rank
+      for j in (i+1):m
+        B[i,j] += h[j-i+1]*rho[2]/rho[1]
+      end
+    end
+    return B
+  end
+  
+  function Bup(le_rank,re_rank,h,lam)
+    m = size(h,1)
+    b = UpperTriangular(zeros(m,m))
+    for i in eachindex(re_rank)
+      b += bup(le_rank[i],re_rank[i],h,lam)
+    end
+    return b
+  end
+
+  function paramup!(A,B,h,lam)
+    m = size(A,1)
+    h = zeros(m)
+    lam = zeros(m)
+    for e in 1:(m-1)
+      lam[e] += sum(A[e,:]) + sum(B[e,:])
+      for s in (e+1):m
+        h[s-e] += A[e,s]
+        h[s-e] += B[e,s]
+      end
+    end
+    copy!(h, h/sum(h))
+    copy!(lam,sum(lam))
+  end
+
+  function jointecdfEM(y,Tmax,iter)
     n = length(y)
-    S0 = zeros(n)
-    L = Vector{Union{Float64, Missing}}(undef, n)
-    R = zeros(n)
-    TP = zeros(n)
+    LE = zeros(n)
+    RE = zeros(n)
+    LS = zeros(n)
+    RS = zeros(n)
     for i in 1:n
-        L[i], R[i] = getE(y[i])
-        S0[i] = ES(y[i], midp)
-        TP[i] = truncpoint(y[i])
+        LE[i], RE[i] = getE(y[i])
+        LS[i], RS[i] = getS(y[i])
     end
-    tj = setbreaks([S0-L;S0-R])
-    m = length(tj)
-    aind = acount(S0-R, S0-L,tj,n,m)
-    p = inv(m)*ones(m)
-    bind = bcount(TP,tj,n,m)
-    dj = d_up(p,aind[1],aind[2],n,m)
-    p_up!(p, n, m, bind[1], bind[2], dj)
-    con = false
-    count = 0
-    p2 = copy(p)
-    for it in 1:iter
-        count += 1
-        dj = d_up(p, aind[1], aind[2], n, m)
-        p_up!(p, n, m, bind[1], bind[2], dj)
-        con = all(abs.(p2-p) .< tol)
-        copy!(p, p2)
-    if con || any(isnan.(p))
-        break
+    ti = sort(unique([LE;RE;LS;RS;Tmax]))
+    le_rank = indexin(LE, ti)
+    re_rank = indexin(RE, ti)
+    ls_rank = indexin(LS, ti)
+    rs_rank = indexin(RS, ti)
+    m = length(ti)
+    h = ones(m)
+    h = h/sum(h)
+    lam = ones(m)
+    lam = lam/sum(lam)
+    A = UpperTriangular(zeros(m,m))
+    B = UpperTriangular(zeros(m,m))
+    logprob = zeros(iter)
+    for i in 1:iter
+      A = Aup(le_rank, re_rank, ls_rank, rs_rank, h, lam)
+      B = Bup(le_rank, re_rank, h, lam)
+      paramup!(A,B,h,lam)
+      logprob[i] = lp(A, B, h, lam)
     end
+    return ti, h, lam, A, B, logprob
+  end
+
+
+  function jointecdfEM(y,iter)
+    n = length(y)
+    LE = zeros(n)
+    RE = zeros(n)
+    LS = zeros(n)
+    RS = zeros(n)
+    for i in 1:n
+        LE[i], RE[i] = getE(y[i])
+        LS[i], RS[i] = getS(y[i])
     end
-    return tj, 1 .- cumsum(p), con, count
+    ti = sort(unique([LE;RE;LS;RS]))
+    le_rank = indexin(LE, ti)
+    re_rank = indexin(RE, ti)
+    ls_rank = indexin(LS, ti)
+    rs_rank = indexin(RS, ti)
+    m = length(ti)
+    h = ones(m)
+    h = h/sum(h)
+    lam = ones(m)
+    lam = lam/sum(lam)
+    A = UpperTriangular(zeros(m,m))
+    logprob = zeros(iter)
+    for i in 1:iter
+      A = Aup(le_rank, re_rank, ls_rank, rs_rank, h, lam)
+      paramup!(A,h,lam)
+      logprob[i] = lp(A, B, h, lam)
+    end
+    return ti, h, lam, A, B, logprob
+  end
+
+  
+function ecdfEM(y, iter, tol)
+    n = length(y)
+    LE = zeros(n)
+    RE = zeros(n)
+    LS = zeros(n)
+    RS = zeros(n)
+    for i in 1:n
+        LE[i], RE[i] = getE(y[i])
+        LS[i], RS[i] = getS(y[i])
+    end
+    ti = sort(unique([LE;RE;LS;RS]))
+    le_rank = indexin(LE, ti)
+    re_rank = indexin(RE, ti)
+    ls_rank = indexin(LS, ti)
+    rs_rank = indexin(RS, ti)
+    m = length(ti)
+    h = ones(m)
+    h = h/sum(h)
+    lam = ones(m)
+    lam = lam/sum(lam)
+    A = UpperTriangular(zeros(m,m))
+    logprob = zeros(iter)
+    for i in 1:iter
+      A = Aup(le_rank, re_rank, ls_rank, rs_rank, h)
+      paramup!(A,h)
+      logprob[i] = lp(A, h)
+    end
+    return ti, h, A, logprob
 end
 
-########
-#following functions are deprecated
-#
-
-function SurvICm(Y, iter=100, tol=1e-6)
-    n = size(Y, 1)
-    tj = setbreaks([Y[i].S-Y[i].ER for i in eachindex(Y)])
-    m = length(tj)
-    aind1 = zeros(Int, n)
-    aind2 = zeros(Int, n)
-    for i in axes(Y, 1)
-        aind1[i], aind2[i] = acount(Y[i], tj, m)
-    end
-    p = inv(m)*ones(m)
-    q = cumsum(p)
-    Delta = diff(tj)
-    den = sum(Delta)
-    mu = (m-1) - sum(q[i]*Delta[i] for i in 1:(m-1))
-    dj = d_up(p, aind1, aind2, n, m)
-    copy!(p, dj*mu ./ (den*sum(dj)))
-    con = false
-    count = 0
-    p2 = copy(p)
-    for it in 1:iter
-        count += 1
-        dj = d_up(p, aind1, aind2, n, m)
-        copy!(p2, dj ./ sum(dj))
-        con = all(abs.(p2-p) .< tol)
-        copy!(p, p2)
-    if con || any(isnan.(p))
-        break
-    end
-    end
-    return tj, 1 .- cumsum(p), con, count
-end
-
-function SurvIC(L, R, S, iter=100, tol=1e-8)
-    tj = setbreaks([S-L;S-R])
-    n = length(L)
-    m = length(tj)
-    aind = acount(S-R, S-L,tj,n,m)
-    p = inv(m)*ones(m)
-    dj = d_up(p, aind[1], aind[2], n, m)
-    copy!(p, dj ./ sum(dj))
-    con = false
-    count = 0
-    p2 = copy(p) #こういうとこcopy!()とか使ったほうがいいですか？
-    for it in 1:iter
-        count += 1
-        dj = d_up(p,aind[1],aind[2],n,m)
-        copy!(p2, dj ./ sum(dj))
-        con = all(abs.(p2-p) .< tol)
-        copy!(p, p2)
-    if con || any(isnan.(p))
-        break
-    end
-    end
-    return tj, 1.0 .- cumsum(p), con, count
-end
-
-
-function SurvICRT(L, R, S, Tmax, iter=100, tol=1e-10)
-    tj = setbreaks([S-L;S-R])
-    n = length(L)
-    m = length(tj)
-    aind = acount(S-R, S-L,tj,n,m)
-    p = inv(m)*ones(m)
-    bind = bcount(Tmax.-S,tj,n,m)
-    dj = d_up(p,aind[1],aind[2],n,m)
-    p_up!(p, n, m, bind[1], bind[2], dj)
-    con = false
-    count = 0
-    p2 = p #こういうとこcopy!()とか使ったほうがいいですか？
-    for it in 1:iter
-        count += 1
-        dj = d_up(p,aind[1],aind[2],n,m)
-        p_up!(p, n, m, bind[1], bind[2], dj)
-        con = all(abs.(p2-p) .< tol)
-        p = p2
-    if con || any(isnan.(p))
-        break
-    end
-    end
-    return tj, 1.0 .- cumsum(p), con, count
-end
-
-function SurvDIC(EL, ER, SL, SR, midp = 0.5, iter = 100, tol = 1e-8)
-    S = midp * (SL+SR)
-    tj = setbreaks([S-EL;S-ER])
-    n = length(EL)
-    m = length(tj)
-    aind = acount(S-ER, S-EL,tj,n,m)
-    p = inv(m)*ones(m)
-    dj = d_up(p,aind[1],aind[2],n,m)
-    copy!(p, dj ./ sum(dj))
-    con = false
-    count = 0
-    p2 = p #こういうとこcopy!()とか使ったほうがいいですか？
-    for it in 1:iter
-        count += 1
-        dj = d_up(p,aind[1],aind[2],n,m)
-        copy!(p2, dj ./ sum(dj))
-        con = all(abs.(p2-p) .< tol)
-        p = p2
-    if con || any(isnan.(p))
-        break
-    end
-    end
-    return tj, 1.0 .- cumsum(p), con, count
-end
-
-function SurvDICRT(EL, ER, SL, SR, Tmax, midp = 0.5, iter=100, tol=1e-8)
-    S =  midp *(SL+SR)
-    tj = setbreaks([S-EL;S-ER])
-    n = length(EL)
-    m = length(tj)
-    aind = acount(S-ER, S-EL,tj,n,m)
-    p = inv(m)*ones(m)
-    bind = bcount(Tmax.-SR,tj,n,m)
-    dj = d_up(p,aind[1],aind[2],n,m)
-    p_up!(p, n, m, bind[1], bind[2],dj)
-    con = false
-    count = 0
-    p2 = p #こういうとこcopy!()とか使ったほうがいいですか？
-    for it in 1:iter
-        count += 1
-        dj = d_up(p,aind[1],aind[2],n,m)
-        p_up!(p, n, m, bind[1], bind[2], dj)
-        con = all(abs.(p2-p) .< tol)
-        p = p2
-    if con || any(isnan.(p))
-        break
-    end
-    end
-    return tj, 1.0 .- cumsum(p), con, count
-end
+  
+ colmarginal(x) = cumsum(vec(sum(x,dims=2)))
+ h2ccdf(x) = reverse(cumsum(reverse(x)))

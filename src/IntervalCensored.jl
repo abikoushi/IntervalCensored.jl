@@ -7,6 +7,7 @@ using HypergeometricFunctions
 using ForwardDiff
 using StaticArrays
 using StatsFuns
+using LogExpFunctions
 import LinearAlgebra: dot
 import Distributions: ccdf, cdf, logpdf, pdf, quantile, mean, rand, params, shape, scale
 import Distributions: @distr_support
@@ -18,25 +19,16 @@ struct NC{TE, TS} <: IntervalData
     S::TS
 end
 
-struct IC{TEL, TER, TS} <: IntervalData
+struct ICE{TEL, TER, TS} <: IntervalData
     EL::TEL
     ER::TER
     S::TS
 end
 
-struct ICRT{TEL, TER, TS, TTR} <: IntervalData
+struct ICS{TE, TSL, TSR} <: IntervalData
     EL::TEL
     ER::TER
     S::TS
-    TR::TTR
-end
-
-struct ICT{TEL, TER, TS, TTL, TTR} <: IntervalData
-    EL::TEL
-    ER::TER
-    S::TS
-    TL::TTL
-    TR::TTR
 end
 
 struct DIC{TEL, TER, TSL, TSR} <: IntervalData
@@ -46,24 +38,6 @@ struct DIC{TEL, TER, TSL, TSR} <: IntervalData
     SR::TSR
 end
 
-struct DICRT{TEL, TER, TSL, TSR, TTR} <: IntervalData
-    EL::TEL
-    ER::TER
-    SL::TSL
-    SR::TSR
-    TR::TTR
-end
-
-struct DICT{TEL, TER, TSL, TSR, TTL, TTR} <: IntervalData
-    EL::TEL
-    ER::TER
-    SL::TSL
-    SR::TSR
-    TL::TTL
-    TR::TTR
-end
-
-
 include("NonParametric.jl")
 include("SimTools.jl")
 include("calclp.jl")
@@ -72,9 +46,9 @@ include("./survdist/GeneralizedGamma.jl")
 include("./survdist/LogLogistic.jl")
 include("MCEM.jl")
 
-export evaluatelp, IntervalData, NC, IC, ICRT, DIC, DICRT
-export makeIC, makeICRT, makeDIC, makeDICRT
-export eccdfEM
+export evaluatelp, IntervalData, NC, ICE, ICS, DIC
+export makeIC, makeDIC
+export jointecdfEM, ecdfEM,  colmarginal,  h2ccdf
 export eqcdf, cdf, ccdf, pdf, logpdf, mean, shape, scale, params, rand
 export MCEM
 export GeneralizedGamma, LogLogistic
