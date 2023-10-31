@@ -25,7 +25,7 @@ struct ICE{TEL, TER, TS} <: IntervalData
     S::TS
 end
 
-struct ICS{TE, TSL, TSR} <: IntervalData
+struct ICS{TEL, TSL, TSR} <: IntervalData
     EL::TEL
     ER::TER
     S::TS
