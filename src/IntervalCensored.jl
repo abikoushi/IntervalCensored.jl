@@ -25,10 +25,10 @@ struct ICE{TEL, TER, TS} <: IntervalData
     S::TS
 end
 
-struct ICS{TEL, TSL, TSR} <: IntervalData
-    EL::TEL
-    ER::TER
-    S::TS
+struct ICS{TE, TSL, TSR} <: IntervalData
+    E::TE
+    SL::TSL
+    SR::TSR
 end
 
 struct DIC{TEL, TER, TSL, TSR} <: IntervalData
