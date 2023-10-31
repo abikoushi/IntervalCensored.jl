@@ -8,7 +8,7 @@ using ForwardDiff
 using StaticArrays
 using StatsFuns
 using LogExpFunctions
-import LinearAlgebra: dot
+import LinearAlgebra: dot, UpperTriangular
 import Distributions: ccdf, cdf, logpdf, pdf, quantile, mean, rand, params, shape, scale
 import Distributions: @distr_support
 

@@ -12,7 +12,7 @@ function makeIC(rng::AbstractRNG, dt::UnivariateDistribution, N::Int)
         S = at + y
         EL = max(0.0, at - tau * (1.0 - ue))
         ER = min(S, at + tau * ue)
-        push!(X, IC(EL,ER,S))
+        push!(X, ICE(EL,ER,S))
     end
     return X
 end
