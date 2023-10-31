@@ -73,25 +73,25 @@ end
 
 ####
 
-function Estep(rng::AbstractRNG, dist::ContinuousUnivariateDistribution, x::IC)
+function Estep(rng::AbstractRNG, dist::ContinuousUnivariateDistribution, x::ICE)
     ytilde = rand(rng, truncated(dist, x.S-x.ER, x.S-x.EL))
     return ytilde
 end
 
-function Estep(rng::AbstractRNG, dist::ContinuousUnivariateDistribution, x::ICRT)
-    ys = rand(rng, truncated(dist, x.S-x.ER, x.S-x.EL))
-    u = rand(rng)
-    E = x.EL + (x.ER-x.EL)*u
-    q = cdf(dist, x.TR - E)
-    yb = []
-    if zero(q) < q < one(q)
-        B = rand(rng, Geometric(q))
-        if B > 0
-            push!(yb,[rand(rng, truncated(dist,Tmax-E,Inf)) for i in UnitRange(1,B)])
-        end
-    end
-    return [ys ; yb]
-end
+# function Estep(rng::AbstractRNG, dist::ContinuousUnivariateDistribution, x::ICRT)
+#     ys = rand(rng, truncated(dist, x.S-x.ER, x.S-x.EL))
+#     u = rand(rng)
+#     E = x.EL + (x.ER-x.EL)*u
+#     q = cdf(dist, x.TR - E)
+#     yb = []
+#     if zero(q) < q < one(q)
+#         B = rand(rng, Geometric(q))
+#         if B > 0
+#             push!(yb,[rand(rng, truncated(dist,Tmax-E,Inf)) for i in UnitRange(1,B)])
+#         end
+#     end
+#     return [ys ; yb]
+# end
 
 function Estep(rng::AbstractRNG, dist::ContinuousUnivariateDistribution, x::DIC)
     u = rand(rng)
@@ -100,22 +100,22 @@ function Estep(rng::AbstractRNG, dist::ContinuousUnivariateDistribution, x::DIC)
     return ytilde
 end
 
-function Estep(rng::AbstractRNG, dist::ContinuousUnivariateDistribution, x::DICRT)
-    u = rand(rng)
-    S = x.SL + (x.SR-x.SL)*u
-    rand!(rng, u)
-    E = x.EL + (x.ER-x.EL)*u
-    q = cdf(dist, x.TR - E)
-    yb = []
-    if zero(q) < q < one(q)
-        B = rand(rng, Geometric(q))
-        if B > 0
-            push!(yb,[rand(rng, truncated(dist,Tmax-E,Inf)) for i in UnitRange(1,B)])
-        end
-    end
-    ytilde = rand(rng, truncated(dist, S-x.ER, S-x.EL))
-    return ytilde
-end
+# function Estep(rng::AbstractRNG, dist::ContinuousUnivariateDistribution, x::DICRT)
+#     u = rand(rng)
+#     S = x.SL + (x.SR-x.SL)*u
+#     rand!(rng, u)
+#     E = x.EL + (x.ER-x.EL)*u
+#     q = cdf(dist, x.TR - E)
+#     yb = []
+#     if zero(q) < q < one(q)
+#         B = rand(rng, Geometric(q))
+#         if B > 0
+#             push!(yb,[rand(rng, truncated(dist,Tmax-E,Inf)) for i in UnitRange(1,B)])
+#         end
+#     end
+#     ytilde = rand(rng, truncated(dist, S-x.ER, S-x.EL))
+#     return ytilde
+# end
 
 ####
 
